@@ -1,0 +1,47 @@
+services:
+  mariadb:
+    image: mariadb:11
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: ${DB_NAME:-lokaleondernemers}
+      MARIADB_USER: ${DB_USER:-lokaleondernemers}
+      MARIADB_PASSWORD: ${DB_PASSWORD:-lokaleondernemers}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-rootwachtwoord}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: 192.168.0.79:5000/lokaleondernemers:latest
+    build: .
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    # Geeft o.a. de optionele SPRING_MAIL_*-instellingen door; de vaste waarden hieronder hebben voorrang.
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME:-lokaleondernemers}
+      DB_USER: ${DB_USER:-lokaleondernemers}
+      DB_PASSWORD: ${DB_PASSWORD:-lokaleondernemers}
+      APP_ADMIN_EMAIL: ${APP_ADMIN_EMAIL:-admin@lokaleondernemers.be}
+      APP_ADMIN_WACHTWOORD: ${APP_ADMIN_WACHTWOORD:-admin1234}
+      APP_BASIS_URL: ${APP_BASIS_URL:-http://localhost:8080}
+      APP_MAIL_AFZENDER: ${APP_MAIL_AFZENDER:-Lokale Ondernemers <noreply@lokaleondernemers.be>}
+      APP_MAIL_VOORBEELD_MAP: /app/mail-voorbeelden
+    ports:
+      - "8280:8080"
+    volumes:
+      - mail-voorbeelden:/app/mail-voorbeelden
+
+volumes:
+  mariadb-data:
+  mail-voorbeelden:
