@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Mijn bestellingen')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <h1 class="mt">Mijn bestellingen</h1>
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+    <div class="kaart leeg" th:if="${#lists.isEmpty(bestellingen)}">
+        <div class="groot">📦</div>
+        <p>Je hebt nog geen bestellingen geplaatst.</p>
+        <a th:href="@{/producten}" class="knop">Ontdek producten</a>
+    </div>
+
+    <div class="kaart tabel-wrap" th:unless="${#lists.isEmpty(bestellingen)}">
+        <table>
+            <thead>
+            <tr><th>Nummer</th><th>Ondernemer</th><th>Geplaatst</th><th>Ophalen</th><th>Totaal</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${bestellingen}">
+                <td th:text="${b.nummer}"></td>
+                <td><a th:href="@{/winkel/{slug}(slug=${b.onderneming.slug})}" th:text="${b.onderneming.naam}"></a></td>
+                <td th:text="${@fmt.datumTijd(b.geplaatstOp)}"></td>
+                <td th:text="${@fmt.korteDatum(b.gewensteOphaaldatum)}"></td>
+                <td th:text="${@fmt.euro(b.totaal)}"></td>
+                <td><span th:replace="~{fragments/layout :: status(${b.status})}"></span></td>
+                <td class="rechts"><a th:href="@{/mijn/bestellingen/{id}(id=${b.id})}" class="knop knop-tweede knop-klein">Details</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

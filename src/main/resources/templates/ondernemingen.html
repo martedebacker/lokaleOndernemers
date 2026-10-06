@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Ondernemingen')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <h1 class="mt">Ondernemingen</h1>
+    <p class="zacht">Zelfstandigen die hun producten op het platform aanbieden.</p>
+
+    <form class="zoekbalk" th:action="@{/ondernemingen}" method="get">
+        <input type="search" name="zoek" th:value="${zoek}" placeholder="Naam, gemeente of specialiteit…" aria-label="Zoeken">
+        <select name="regio" aria-label="Regio">
+            <option value="">Alle regio's</option>
+            <option th:each="r : ${alleRegios}" th:value="${r.id}" th:text="${r.naam}" th:selected="${r.id == gekozenRegio}">Regio</option>
+        </select>
+        <button class="knop" type="submit">Filteren</button>
+    </form>
+
+    <div class="raster-breed" th:unless="${#lists.isEmpty(ondernemingen)}">
+        <th:block th:each="o : ${ondernemingen}"><a th:replace="~{fragments/layout :: ondernemingkaart(${o})}"></a></th:block>
+    </div>
+    <div class="kaart leeg" th:if="${#lists.isEmpty(ondernemingen)}">
+        <div class="groot">🔍</div>
+        <p>Geen ondernemingen gevonden.</p>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

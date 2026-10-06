@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${evenement != null} ? 'Evenement bewerken' : 'Nieuw evenement')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<th:block th:with="admin=${formActie == '/admin/evenementen'},
+                   actie=${evenement != null ? formActie + '/' + evenement.id : formActie + '/nieuw'}">
+<th:block th:if="${admin}"><div th:replace="~{fragments/layout :: adminkop('evenementen')}"></div></th:block>
+<th:block th:unless="${admin}"><div th:replace="~{fragments/layout :: beheerkop('evenementen')}"></div></th:block>
+
+<main class="container middel">
+    <div class="breadcrumb"><a th:href="@{${formActie}}">Evenementen</a> ›
+        <span th:text="${evenement != null} ? ${evenement.titel} : 'Nieuw evenement'"></span></div>
+    <h2 th:text="${evenement != null} ? 'Evenement bewerken' : 'Nieuw evenement'">Evenement</h2>
+    <p class="zacht" th:if="${admin and (evenement == null or evenement.doorPlatform)}">Dit evenement wordt getoond als georganiseerd door Lokale Ondernemers.</p>
+    <p class="zacht" th:if="${admin and evenement != null and !evenement.doorPlatform}"
+       th:text="'Dit evenement is van ' + ${evenement.organisator.naam} + '. Je past het aan als beheerder.'"></p>
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+    <form th:action="@{${actie}}"
+          th:object="${form}" method="post" enctype="multipart/form-data" class="formulier kaart kaart-inhoud">
+        <div th:replace="~{fragments/velden :: globalefouten}"></div>
+
+        <div class="veld" th:classappend="${#fields.hasErrors('titel')} ? 'fout'">
+            <label for="titel">Titel</label>
+            <input type="text" th:field="*{titel}" required placeholder="Bv. Kerstmarkt, workshop pottenbakken, proeverij…">
+            <span class="veldfout" th:errors="*{titel}"></span>
+        </div>
+        <div class="veld" th:classappend="${#fields.hasErrors('beschrijving')} ? 'fout'">
+            <label for="beschrijving">Beschrijving</label>
+            <textarea th:field="*{beschrijving}" rows="5" placeholder="Wat kunnen bezoekers verwachten? Moeten ze inschrijven?"></textarea>
+            <span class="veldfout" th:errors="*{beschrijving}"></span>
+        </div>
+        <div class="formulier-raster">
+            <div class="veld" th:classappend="${#fields.hasErrors('startMoment')} ? 'fout'">
+                <label for="startMoment">Begin</label>
+                <input type="datetime-local" th:field="*{startMoment}" required>
+                <span class="veldfout" th:errors="*{startMoment}"></span>
+            </div>
+            <div class="veld" th:classappend="${#fields.hasErrors('eindMoment')} ? 'fout'">
+                <label for="eindMoment">Einde <span class="zacht">(optioneel)</span></label>
+                <input type="datetime-local" th:field="*{eindMoment}">
+                <span class="veldfout" th:errors="*{eindMoment}"></span>
+            </div>
+            <div class="veld" th:classappend="${#fields.hasErrors('prijsInfo')} ? 'fout'">
+                <label for="prijsInfo">Prijs <span class="zacht">(optioneel)</span></label>
+                <input type="text" th:field="*{prijsInfo}" placeholder="Gratis, € 5 p.p.…">
+                <span class="veldfout" th:errors="*{prijsInfo}"></span>
+            </div>
+        </div>
+        <div class="veld" th:classappend="${#fields.hasErrors('locatie')} ? 'fout'">
+            <label for="locatie">Locatie</label>
+            <input type="text" th:field="*{locatie}" required placeholder="Adres of plaats, bv. Grote Markt">
+            <span class="veldfout" th:errors="*{locatie}"></span>
+        </div>
+        <div class="formulier-raster">
+            <div class="veld" th:classappend="${#fields.hasErrors('gemeente')} ? 'fout'">
+                <label for="gemeente">Gemeente</label>
+                <input type="text" th:field="*{gemeente}" required>
+                <span class="veldfout" th:errors="*{gemeente}"></span>
+            </div>
+            <div class="veld" th:classappend="${#fields.hasErrors('regioId')} ? 'fout'">
+                <label for="regioId">Regio</label>
+                <select th:field="*{regioId}" required>
+                    <option value="">Kies…</option>
+                    <option th:each="r : ${regios}" th:value="${r.id}" th:text="${r.naam}">Regio</option>
+                </select>
+                <span class="veldfout" th:errors="*{regioId}"></span>
+            </div>
+        </div>
+
+        <fieldset th:unless="${#lists.isEmpty(kiesbareOndernemingen)}">
+            <legend th:text="${admin} ? 'Deelnemende ondernemingen' : 'Samen met andere ondernemingen?'">Ondernemingen</legend>
+            <p class="hulp" th:unless="${admin}">Organiseer je dit samen met andere ondernemers? Duid ze aan; het evenement verschijnt dan ook op hun winkelpagina. Zij kunnen zich zelf terugtrekken.</p>
+            <div class="keuzelijst">
+                <label class="vinkje" th:each="o : ${kiesbareOndernemingen}">
+                    <input type="checkbox" th:field="*{ondernemingIds}" th:value="${o.id}">
+                    <span th:text="${o.naam} + ' (' + ${o.gemeente} + ')'"></span>
+                </label>
+            </div>
+        </fieldset>
+
+        <div class="veld">
+            <label for="afbeelding">Afbeelding <span class="zacht">(optioneel)</span></label>
+            <img th:if="${evenement != null and evenement.afbeelding != null}" class="voorbeeld-afbeelding"
+                 th:src="@{/afbeelding/{id}(id=${evenement.afbeelding.id})}" alt="Huidige afbeelding">
+            <input type="file" id="afbeelding" name="afbeelding" accept="image/jpeg,image/png,image/webp,image/gif">
+            <span class="hulp">JPG, PNG, WebP of GIF, maximaal 5 MB.</span>
+            <label class="vinkje klein" th:if="${evenement != null and evenement.afbeelding != null}">
+                <input type="checkbox" th:field="*{afbeeldingVerwijderen}"> Afbeelding verwijderen</label>
+        </div>
+
+        <div class="rij">
+            <button type="submit" class="knop">Opslaan</button>
+            <a th:href="@{${formActie}}" class="knop knop-tweede">Annuleren</a>
+        </div>
+    </form>
+</main>
+</th:block>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${product != null} ? 'Product bewerken' : 'Nieuw product')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: beheerkop('producten')}"></div>
+
+<main class="container middel">
+    <div class="breadcrumb"><a th:href="@{/beheer/producten}">Producten</a> ›
+        <span th:text="${product != null} ? ${product.naam} : 'Nieuw product'"></span></div>
+    <h2 th:text="${product != null} ? 'Product bewerken' : 'Nieuw product'">Product</h2>
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+    <form th:action="${product != null} ? @{/beheer/producten/{id}(id=${product.id})} : @{/beheer/producten/nieuw}"
+          th:object="${form}" method="post" enctype="multipart/form-data" class="formulier kaart kaart-inhoud">
+        <div th:replace="~{fragments/velden :: globalefouten}"></div>
+
+        <div class="veld" th:classappend="${#fields.hasErrors('naam')} ? 'fout'">
+            <label for="naam">Naam</label>
+            <input type="text" th:field="*{naam}" required>
+            <span class="veldfout" th:errors="*{naam}"></span>
+        </div>
+        <div class="veld" th:classappend="${#fields.hasErrors('beschrijving')} ? 'fout'">
+            <label for="beschrijving">Beschrijving</label>
+            <textarea th:field="*{beschrijving}" rows="5" placeholder="Wat maakt dit product bijzonder? Ingrediënten, afmetingen, herkomst…"></textarea>
+            <span class="veldfout" th:errors="*{beschrijving}"></span>
+        </div>
+        <div class="formulier-raster">
+            <div class="veld" th:classappend="${#fields.hasErrors('prijs')} ? 'fout'">
+                <label for="prijs">Prijs (€)</label>
+                <input type="number" th:field="*{prijs}" step="0.01" min="0" required>
+                <span class="veldfout" th:errors="*{prijs}"></span>
+            </div>
+            <div class="veld" th:classappend="${#fields.hasErrors('eenheid')} ? 'fout'">
+                <label for="eenheid">Eenheid</label>
+                <input type="text" th:field="*{eenheid}" placeholder="per stuk, per kg…" list="eenheden">
+                <datalist id="eenheden">
+                    <option value="per stuk"><option value="per kg"><option value="per 100 g">
+                    <option value="per pot"><option value="per fles"><option value="per doos"><option value="per pakket">
+                </datalist>
+                <span class="veldfout" th:errors="*{eenheid}"></span>
+            </div>
+            <div class="veld" th:classappend="${#fields.hasErrors('voorraad')} ? 'fout'">
+                <label for="voorraad">Voorraad</label>
+                <input type="number" th:field="*{voorraad}" min="0" step="1" required>
+                <span class="veldfout" th:errors="*{voorraad}"></span>
+            </div>
+        </div>
+        <div class="veld" th:classappend="${#fields.hasErrors('categorie')} ? 'fout'">
+            <label for="categorie">Categorie <span class="zacht">(om je winkel te ordenen)</span></label>
+            <input type="text" th:field="*{categorie}" placeholder="Bv. Brood, Kaas, Servies">
+            <span class="veldfout" th:errors="*{categorie}"></span>
+        </div>
+        <div class="veld">
+            <label for="afbeelding">Foto</label>
+            <img th:if="${product != null and product.afbeelding != null}" class="voorbeeld-afbeelding"
+                 th:src="@{/afbeelding/{id}(id=${product.afbeelding.id})}" alt="Huidige foto">
+            <input type="file" id="afbeelding" name="afbeelding" accept="image/jpeg,image/png,image/webp,image/gif">
+            <span class="hulp">JPG, PNG, WebP of GIF, maximaal 5 MB.</span>
+            <label class="vinkje klein" th:if="${product != null and product.afbeelding != null}">
+                <input type="checkbox" th:field="*{afbeeldingVerwijderen}"> Foto verwijderen</label>
+        </div>
+        <label class="vinkje"><input type="checkbox" th:field="*{zichtbaar}"> Zichtbaar in mijn winkel</label>
+
+        <div class="rij">
+            <button type="submit" class="knop">Opslaan</button>
+            <a th:href="@{/beheer/producten}" class="knop knop-tweede">Annuleren</a>
+        </div>
+    </form>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

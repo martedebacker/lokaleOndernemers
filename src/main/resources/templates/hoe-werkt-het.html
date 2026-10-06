@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Hoe werkt het?')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container middel">
+    <h1 class="mt">Hoe werkt het?</h1>
+    <p class="zacht">Lokale Ondernemers brengt klanten en zelfstandigen uit dezelfde regio samen. Er wordt bewust niet
+        geleverd: je haalt je bestelling persoonlijk op, zodat het contact tussen klant en ondernemer behouden blijft.</p>
+
+    <section class="sectie">
+        <h2>Voor klanten</h2>
+        <div class="stappen">
+            <div class="kaart stap"><h3>Ontdek</h3><p class="zacht">Kies je regio en blader door de winkels en producten in je buurt.</p></div>
+            <div class="kaart stap"><h3>Bestel</h3><p class="zacht">Leg producten in je winkelmand en kies wanneer je ze wil ophalen. Bestel je bij meerdere ondernemers, dan krijgt elk een aparte bestelling.</p></div>
+            <div class="kaart stap"><h3>Bevestiging</h3><p class="zacht">De ondernemer bevestigt je bestelling en spreekt een ophaalmoment af. Je volgt alles op via "Mijn bestellingen".</p></div>
+            <div class="kaart stap"><h3>Ophalen &amp; betalen</h3><p class="zacht">Staat je bestelling op "Klaar om af te halen"? Ga langs, reken af ter plaatse en maak een babbeltje.</p></div>
+        </div>
+    </section>
+
+    <section class="sectie">
+        <h2>Voor ondernemers</h2>
+        <div class="stappen">
+            <div class="kaart stap"><h3>Registreer</h3><p class="zacht">Maak een account aan voor je onderneming. Een beheerder keurt je winkel goed.</p></div>
+            <div class="kaart stap"><h3>Richt je winkel in</h3><p class="zacht">Voeg een logo, banner, beschrijving, openingsuren en je eigen kleur toe: je eigen mini-website.</p></div>
+            <div class="kaart stap"><h3>Plaats producten</h3><p class="zacht">Met foto, prijs, categorie en voorraad. Verberg producten tijdelijk wanneer je wil.</p></div>
+            <div class="kaart stap"><h3>Verwerk bestellingen</h3><p class="zacht">Bevestig, zet klaar en markeer als afgehaald. De voorraad wordt automatisch bijgewerkt.</p></div>
+        </div>
+        <div th:replace="~{fragments/layout :: testfase}" class="mt"></div>
+        <p class="mt">Geen tijd om alles zelf in te stellen? Wij richten je winkelpagina voor je in voor eenmalig
+            <strong th:text="${@fmt.euro(@platform.opstarthulpPrijs)}">€ 40</strong>. Dat kies je bij je registratie.</p>
+        <p class="mt"><a th:href="@{/registreren/ondernemer}" class="knop knop-accent">Open je winkel</a></p>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

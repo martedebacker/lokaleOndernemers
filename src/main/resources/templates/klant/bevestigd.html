@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bestelling geplaatst')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container middel">
+    <div class="kaart kaart-inhoud mt" style="text-align:center">
+        <div style="font-size:3rem">🎉</div>
+        <h1>Bedankt voor je bestelling!</h1>
+        <p class="zacht">De ondernemer ontvangt je bestelling en bevestigt ze zo snel mogelijk. Je volgt de status op
+            via <a th:href="@{/mijn/bestellingen}">Mijn bestellingen</a>.</p>
+    </div>
+
+    <div class="kaart kaart-inhoud mt afhaalkaart" th:each="b : ${bestellingen}">
+        <div class="rij-tussen">
+            <div>
+                <strong th:text="${b.onderneming.naam}"></strong>
+                <span class="zacht klein" th:text="' · ' + ${b.nummer}"></span>
+            </div>
+            <span th:replace="~{fragments/layout :: status(${b.status})}"></span>
+        </div>
+        <p class="klein" style="margin:8px 0">
+            <strong>Ophalen bij:</strong> <span th:text="${b.onderneming.volledigAdres}"></span><br>
+            <strong>Gewenste datum:</strong> <span th:text="${@fmt.datum(b.gewensteOphaaldatum)}"></span><br>
+            <strong>Te betalen bij afhaling:</strong> <span th:text="${@fmt.euro(b.totaal)}"></span>
+        </p>
+        <a class="klein" th:href="@{/mijn/bestellingen/{id}(id=${b.id})}">Details bekijken →</a>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

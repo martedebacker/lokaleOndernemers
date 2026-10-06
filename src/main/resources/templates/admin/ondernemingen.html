@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Ondernemingen beheren')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: adminkop('ondernemingen')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <div class="melding melding-info" th:if="${param.kies}">Kies hieronder welke winkel je wil inrichten (knop "Winkel inrichten").</div>
+    <h2 class="mt">Alle ondernemingen</h2>
+
+    <div class="kaart leeg" th:if="${#lists.isEmpty(ondernemingen)}"><p>Er zijn nog geen ondernemingen.</p></div>
+
+    <div class="kaart tabel-wrap" th:unless="${#lists.isEmpty(ondernemingen)}">
+        <table>
+            <thead><tr><th>Onderneming</th><th>Eigenaar</th><th>Regio</th><th>Aangemeld</th><th>Status</th><th>Wijzig status</th><th>Opstarthulp</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="o : ${ondernemingen}">
+                <td><a th:href="@{/winkel/{slug}(slug=${o.slug})}" target="_blank" th:text="${o.naam}"></a>
+                    <div class="zacht klein" th:text="${o.gemeente}"></div></td>
+                <td>
+                    <span th:text="${o.eigenaar.volledigeNaam}"></span>
+                    <div class="zacht klein" th:text="${o.eigenaar.email}"></div>
+                </td>
+                <td th:text="${o.regio.naam}"></td>
+                <td th:text="${@fmt.datumTijd(o.aangemaaktOp)}"></td>
+                <td><span th:replace="~{fragments/layout :: status(${o.status})}"></span></td>
+                <td>
+                    <form th:action="@{/admin/ondernemingen/{id}/status(id=${o.id})}" method="post" class="rij" style="flex-wrap:nowrap">
+                        <select name="status" aria-label="Status" style="width:auto">
+                            <option th:each="s : ${statussen}" th:value="${s.name()}" th:text="${s.label}" th:selected="${s == o.status}"></option>
+                        </select>
+                        <button type="submit" class="knop knop-tweede knop-klein">Opslaan</button>
+                    </form>
+                </td>
+                <td>
+                    <span th:if="${o.opstarthulp == null}" class="zacht klein">Doet het zelf</span>
+                    <form th:if="${o.opstarthulp != null}" th:action="@{/admin/ondernemingen/{id}/opstarthulp(id=${o.id})}" method="post" class="rij" style="flex-wrap:nowrap">
+                        <select name="status" aria-label="Opstarthulp" style="width:auto">
+                            <option th:each="s : ${opstarthulpStatussen}" th:value="${s.name()}" th:text="${s.label}" th:selected="${s == o.opstarthulp}"></option>
+                        </select>
+                        <button type="submit" class="knop knop-tweede knop-klein">Opslaan</button>
+                    </form>
+                </td>
+                <td>
+                    <form th:action="@{/admin/ondernemingen/{id}/beheren(id=${o.id})}" method="post" class="inline">
+                        <button type="submit" class="knop knop-klein">Winkel inrichten</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<!-- Tabel met aangevraagde opstarthulp, ook gebruikt op het dashboard -->
+<div th:fragment="opstarthulptabel(lijst, terug)" th:if="${lijst != null}" class="kaart tabel-wrap">
+    <table>
+        <thead><tr><th>Onderneming</th><th>Contact</th><th>Wensen</th><th>Aangevraagd</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        <tr th:each="o : ${lijst}">
+            <td><a th:href="@{/winkel/{slug}(slug=${o.slug})}" target="_blank" th:text="${o.naam}"></a>
+                <div class="zacht klein" th:text="${o.gemeente}"></div></td>
+            <td class="klein">
+                <span th:text="${o.eigenaar.volledigeNaam}"></span><br>
+                <a th:href="'mailto:' + ${o.eigenaar.email}" th:text="${o.eigenaar.email}"></a>
+                <span th:if="${o.eigenaar.telefoon}"><br><span th:text="${o.eigenaar.telefoon}"></span></span>
+            </td>
+            <td class="klein pre" th:text="${o.opstartWensen ?: '—'}" style="max-width:320px"></td>
+            <td class="klein" th:text="${@fmt.datumTijd(o.opstarthulpAangevraagdOp)}"></td>
+            <td>
+                <form th:action="@{/admin/ondernemingen/{id}/opstarthulp(id=${o.id})}" method="post" class="rij" style="flex-wrap:nowrap">
+                    <input type="hidden" name="terug" th:value="${terug}">
+                    <select name="status" aria-label="Opstarthulp" style="width:auto">
+                        <option value="AANGEVRAAGD" th:selected="${o.opstarthulp.name() == 'AANGEVRAAGD'}">Aangevraagd</option>
+                        <option value="IN_UITVOERING" th:selected="${o.opstarthulp.name() == 'IN_UITVOERING'}">Wordt ingericht</option>
+                        <option value="AFGEROND" th:selected="${o.opstarthulp.name() == 'AFGEROND'}">Afgerond</option>
+                    </select>
+                    <button type="submit" class="knop knop-tweede knop-klein">Opslaan</button>
+                </form>
+            </td>
+            <td>
+                <form th:action="@{/admin/ondernemingen/{id}/beheren(id=${o.id})}" method="post" class="inline">
+                    <button type="submit" class="knop knop-klein">Winkel inrichten</button>
+                </form>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

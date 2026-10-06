@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bestelling ' + ${bestelling.nummer})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: beheerkop('bestellingen')}"></div>
+
+<main class="container" th:with="b=${bestelling}">
+    <div class="breadcrumb"><a th:href="@{/beheer/bestellingen}">Bestellingen</a> › <span th:text="${b.nummer}"></span></div>
+    <div class="rij-tussen">
+        <h2 th:text="'Bestelling ' + ${b.nummer}">Bestelling</h2>
+        <span th:replace="~{fragments/layout :: status(${b.status})}"></span>
+    </div>
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <ul th:replace="~{fragments/bestelling :: tijdlijn(${b})}"></ul>
+
+    <div class="twee-kolommen mt">
+        <div>
+            <div th:replace="~{fragments/bestelling :: regels(${b})}"></div>
+            <div class="kaart kaart-inhoud mt" th:if="${b.opmerkingKlant}">
+                <strong>Opmerking van de klant</strong>
+                <p class="pre" style="margin:4px 0 0" th:text="${b.opmerkingKlant}"></p>
+            </div>
+        </div>
+
+        <aside>
+            <div class="kaart kaart-inhoud mb">
+                <h3>Klant</h3>
+                <p class="klein" style="margin:0">
+                    <strong th:text="${b.klant.volledigeNaam}"></strong><br>
+                    ✉️ <a th:href="'mailto:' + ${b.klant.email}" th:text="${b.klant.email}"></a><br>
+                    <span th:if="${b.klant.telefoon}">📞 <a th:href="'tel:' + ${b.klant.telefoon}" th:text="${b.klant.telefoon}"></a><br></span>
+                    <span class="zacht" th:text="'Geplaatst op ' + ${@fmt.datumTijd(b.geplaatstOp)}"></span><br>
+                    <strong>Wil ophalen op:</strong> <span th:text="${@fmt.datum(b.gewensteOphaaldatum)}"></span>
+                </p>
+            </div>
+
+            <div class="kaart kaart-inhoud afhaalkaart">
+                <h3>Bestelling verwerken</h3>
+                <form th:action="@{/beheer/bestellingen/{id}(id=${b.id})}" method="post" class="formulier">
+                    <div class="veld">
+                        <label for="ophaalAfspraak">Ophaalmoment / bericht aan de klant</label>
+                        <textarea id="ophaalAfspraak" name="ophaalAfspraak" maxlength="1000"
+                                  placeholder="Bv. Je kan je bestelling zaterdag vanaf 10u ophalen."
+                                  th:text="${b.ophaalAfspraak}" th:disabled="${!b.status.open}"></textarea>
+                        <span class="hulp">De klant ziet dit bericht bij zijn bestelling.</span>
+                    </div>
+                    <div class="rij" th:if="${b.status.open}">
+                        <button type="submit" class="knop knop-tweede knop-klein">Bericht opslaan</button>
+                    </div>
+                    <div th:unless="${#lists.isEmpty(b.status.volgendeStatussen)}">
+                        <div class="klein zacht mb" style="margin-bottom:8px">Status wijzigen naar:</div>
+                        <div class="rij">
+                            <th:block th:each="s : ${b.status.volgendeStatussen}">
+                                <button th:if="${s.name() != 'GEANNULEERD'}" type="submit" name="status" th:value="${s.name()}"
+                                        class="knop knop-klein" th:text="${s.label}">Status</button>
+                                <button th:if="${s.name() == 'GEANNULEERD'}" type="submit" name="status" value="GEANNULEERD"
+                                        class="knop knop-gevaar knop-klein"
+                                        onclick="return confirm('Bestelling annuleren? De gereserveerde voorraad wordt teruggezet.')">Annuleren</button>
+                            </th:block>
+                        </div>
+                    </div>
+                    <p class="klein zacht" th:if="${#lists.isEmpty(b.status.volgendeStatussen)}" style="margin:0">
+                        Deze bestelling is afgerond.
+                    </p>
+                </form>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

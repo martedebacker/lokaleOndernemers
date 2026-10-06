@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Mijn winkel')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: beheerkop('dashboard')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+    <div class="melding melding-info mt" th:if="${onderneming.status.name() == 'IN_AFWACHTING'}">
+        <strong>Je winkel wacht op goedkeuring.</strong> Een beheerder bekijkt je aanvraag. Intussen kan je je
+        <a th:href="@{/beheer/onderneming}">winkelpagina inrichten</a> en <a th:href="@{/beheer/producten/nieuw}">producten toevoegen</a>,
+        zodat alles klaarstaat zodra je winkel online gaat.
+    </div>
+    <div class="melding melding-fout mt" th:if="${onderneming.status.name() == 'GEBLOKKEERD'}">
+        <strong>Je winkel is geblokkeerd</strong> en niet zichtbaar voor klanten. Neem contact op met de beheerder van het platform.
+    </div>
+
+    <!-- Opstarthulp: aangevraagd of nog aan te vragen -->
+    <div class="melding melding-succes mt" th:if="${onderneming.opstarthulp != null and onderneming.opstarthulp.name() != 'AFGEROND'}">
+        <strong>Opstarthulp: <span th:text="${onderneming.opstarthulp.label}"></span>.</strong>
+        Wij richten je winkelpagina voor je in en nemen contact met je op. Heb je nog wensen of materiaal (foto's, logo, prijslijst)?
+        Laat het ons weten via <a th:href="@{/beheer/feedback}">Feedback</a>.
+    </div>
+
+    <div class="kaart kaart-inhoud mt"
+         th:with="heeftLogo=${onderneming.logo != null}, heeftBanner=${onderneming.banner != null},
+                  heeftTekst=${onderneming.beschrijving != null}, heeftUren=${onderneming.ophaalInfo != null},
+                  eigenKleuren=${onderneming.eigenKleuren},
+                  heeftProducten=${aantalProducten > 0}"
+         th:unless="${onderneming.logo != null and onderneming.banner != null and onderneming.beschrijving != null and onderneming.ophaalInfo != null and aantalProducten > 0}">
+        <div class="rij-tussen">
+            <div>
+                <h2 style="margin-bottom:4px">Maak je winkelpagina helemaal de jouwe</h2>
+                <p class="zacht klein" style="margin:0">Een persoonlijke pagina trekt meer klanten. Dit kan je nog doen:</p>
+            </div>
+            <a th:href="@{/beheer/onderneming}" class="knop knop-accent knop-klein">Personaliseren</a>
+        </div>
+        <ul class="checklist mt">
+            <li th:classappend="${heeftLogo} ? 'klaar'"><span class="vink">✓</span><a th:href="@{/beheer/onderneming}">Logo toevoegen</a></li>
+            <li th:classappend="${heeftBanner} ? 'klaar'"><span class="vink">✓</span><a th:href="@{/beheer/onderneming}">Bannerfoto toevoegen</a></li>
+            <li th:classappend="${eigenKleuren} ? 'klaar'"><span class="vink">✓</span><a th:href="@{/beheer/onderneming}">Kleurenpalet kiezen</a></li>
+            <li th:classappend="${heeftTekst} ? 'klaar'"><span class="vink">✓</span><a th:href="@{/beheer/onderneming}">Vertel wie je bent (beschrijving)</a></li>
+            <li th:classappend="${heeftUren} ? 'klaar'"><span class="vink">✓</span><a th:href="@{/beheer/onderneming}">Openingsuren &amp; ophaalmomenten invullen</a></li>
+            <li th:classappend="${heeftProducten} ? 'klaar'"><span class="vink">✓</span><a th:href="@{/beheer/producten/importeren}">Producten toevoegen (ook via Excel)</a></li>
+        </ul>
+    </div>
+
+    <div class="statistieken mt">
+        <a class="kaart statistiek" th:classappend="${aantalNieuw > 0} ? 'opvallend'" th:href="@{/beheer/bestellingen}" style="text-decoration:none;color:inherit">
+            <div class="getal" th:text="${aantalNieuw}">0</div>
+            <div class="label">Nieuwe bestellingen</div>
+        </a>
+        <div class="kaart statistiek">
+            <div class="getal" th:text="${aantalKlaar}">0</div>
+            <div class="label">Klaar om af te halen</div>
+        </div>
+        <a class="kaart statistiek" th:href="@{/beheer/producten}" style="text-decoration:none;color:inherit">
+            <div class="getal" th:text="${aantalProducten}">0</div>
+            <div class="label">Producten</div>
+        </a>
+        <div class="kaart statistiek" th:classappend="${!#lists.isEmpty(uitverkocht)} ? 'opvallend'">
+            <div class="getal" th:text="${#lists.size(uitverkocht)}">0</div>
+            <div class="label">Uitverkocht</div>
+        </div>
+    </div>
+
+    <section class="sectie">
+        <div class="sectie-kop">
+            <h2>Openstaande bestellingen</h2>
+            <a th:href="@{/beheer/bestellingen}">Alle bestellingen →</a>
+        </div>
+        <div class="kaart leeg" th:if="${#lists.isEmpty(openBestellingen)}">
+            <div class="groot">📭</div>
+            <p>Geen openstaande bestellingen.</p>
+        </div>
+        <div th:replace="~{beheer/bestellingen :: tabel(${openBestellingen})}"></div>
+    </section>
+
+    <section class="sectie" th:unless="${#lists.isEmpty(uitverkocht)}">
+        <h2>Uitverkochte producten</h2>
+        <div class="kaart kaart-inhoud">
+            <p class="zacht klein">Deze producten kunnen niet besteld worden tot je de voorraad aanvult.</p>
+            <ul>
+                <li th:each="p : ${uitverkocht}"><a th:href="@{/beheer/producten/{id}(id=${p.id})}" th:text="${p.naam}"></a></li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="sectie" th:if="${onderneming.opstarthulp == null}">
+        <div class="kaart kaart-inhoud">
+            <h2 style="margin-bottom:4px">Liever dat wij je winkelpagina in orde brengen?
+                <span class="prijslabel" th:text="${@fmt.euro(@platform.opstarthulpPrijs)} + ' eenmalig'">€ 40</span></h2>
+            <p class="zacht klein">We richten je pagina in en zetten alles naar wens goed: uitstraling, teksten en producten.
+                Betalen gebeurt niet via de website: we bespreken dit persoonlijk met je.</p>
+            <form th:action="@{/beheer/opstarthulp}" method="post" class="formulier">
+                <div class="veld">
+                    <label for="wensen">Wat wil je graag op je pagina? <span class="zacht">(optioneel)</span></label>
+                    <textarea id="wensen" name="wensen" rows="3" maxlength="2000"
+                              placeholder="Bv. sfeer en kleuren, je producten en prijzen, een link naar je Instagram…"></textarea>
+                </div>
+                <div><button type="submit" class="knop knop-accent">Opstarthulp aanvragen</button></div>
+            </form>
+        </div>
+    </section>
+
+    <section class="sectie" th:if="${@platform.inTestfase}">
+        <div th:replace="~{fragments/layout :: testfase}"></div>
+        <p class="klein mt"><a th:href="@{/beheer/feedback}">Geef ons je feedback →</a></p>
+    </section>
+
+    <section class="sectie" th:if="${aantalProducten == 0}">
+        <div class="kaart kaart-inhoud rij-tussen">
+            <div>
+                <h2 style="margin-bottom:4px">Plaats je eerste product</h2>
+                <p class="zacht" style="margin:0">Voeg een foto, prijs en beschrijving toe en toon het in je winkel.</p>
+            </div>
+            <a th:href="@{/beheer/producten/nieuw}" class="knop knop-accent">Product toevoegen</a>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

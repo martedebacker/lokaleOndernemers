@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Gemeenschappelijke accountvelden; moet binnen een formulier met th:object staan. -->
+<th:block th:fragment="accountvelden">
+    <div class="formulier-raster">
+        <div class="veld" th:classappend="${#fields.hasErrors('voornaam')} ? 'fout'">
+            <label for="voornaam">Voornaam</label>
+            <input type="text" th:field="*{voornaam}" required autocomplete="given-name">
+            <span class="veldfout" th:errors="*{voornaam}"></span>
+        </div>
+        <div class="veld" th:classappend="${#fields.hasErrors('achternaam')} ? 'fout'">
+            <label for="achternaam">Achternaam</label>
+            <input type="text" th:field="*{achternaam}" required autocomplete="family-name">
+            <span class="veldfout" th:errors="*{achternaam}"></span>
+        </div>
+    </div>
+    <div class="formulier-raster">
+        <div class="veld" th:classappend="${#fields.hasErrors('email')} ? 'fout'">
+            <label for="email">E-mailadres</label>
+            <input type="email" th:field="*{email}" required autocomplete="email">
+            <span class="veldfout" th:errors="*{email}"></span>
+        </div>
+        <div class="veld" th:classappend="${#fields.hasErrors('telefoon')} ? 'fout'">
+            <label for="telefoon">Telefoon <span class="zacht">(optioneel)</span></label>
+            <input type="tel" th:field="*{telefoon}" autocomplete="tel">
+            <span class="veldfout" th:errors="*{telefoon}"></span>
+        </div>
+    </div>
+    <div class="formulier-raster">
+        <div class="veld" th:classappend="${#fields.hasErrors('wachtwoord')} ? 'fout'">
+            <label for="wachtwoord">Wachtwoord</label>
+            <input type="password" id="wachtwoord" name="wachtwoord" required minlength="8" autocomplete="new-password">
+            <span class="hulp">Minstens 8 tekens.</span>
+            <span class="veldfout" th:errors="*{wachtwoord}"></span>
+        </div>
+        <div class="veld" th:classappend="${#fields.hasErrors('wachtwoordHerhaling')} ? 'fout'">
+            <label for="wachtwoordHerhaling">Herhaal wachtwoord</label>
+            <input type="password" id="wachtwoordHerhaling" name="wachtwoordHerhaling" required autocomplete="new-password">
+            <span class="veldfout" th:errors="*{wachtwoordHerhaling}"></span>
+        </div>
+    </div>
+</th:block>
+
+<div th:fragment="globalefouten" th:if="${#fields.hasGlobalErrors()}">
+    <div class="melding melding-fout" th:each="e : ${#fields.globalErrors()}" th:text="${e}" role="alert"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Mijn profiel')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container middel">
+    <div class="kaart kaart-inhoud mt">
+        <h1>Mijn profiel</h1>
+        <p class="zacht" th:text="${ingelogd.email} + ' · ' + ${ingelogd.rol.label}"></p>
+        <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+        <form th:action="@{/mijn/profiel}" th:object="${form}" method="post" class="formulier">
+            <div th:replace="~{fragments/velden :: globalefouten}"></div>
+            <div class="formulier-raster">
+                <div class="veld" th:classappend="${#fields.hasErrors('voornaam')} ? 'fout'">
+                    <label for="voornaam">Voornaam</label>
+                    <input type="text" th:field="*{voornaam}" required>
+                    <span class="veldfout" th:errors="*{voornaam}"></span>
+                </div>
+                <div class="veld" th:classappend="${#fields.hasErrors('achternaam')} ? 'fout'">
+                    <label for="achternaam">Achternaam</label>
+                    <input type="text" th:field="*{achternaam}" required>
+                    <span class="veldfout" th:errors="*{achternaam}"></span>
+                </div>
+            </div>
+            <div class="veld">
+                <label for="telefoon">Telefoon</label>
+                <input type="tel" th:field="*{telefoon}">
+                <span class="hulp">Handig zodat de ondernemer je kan bereiken over het ophaalmoment.</span>
+            </div>
+            <fieldset>
+                <legend>Wachtwoord wijzigen <span class="zacht klein">(optioneel)</span></legend>
+                <div class="formulier-raster">
+                    <div class="veld">
+                        <label for="huidigWachtwoord">Huidig wachtwoord</label>
+                        <input type="password" id="huidigWachtwoord" name="huidigWachtwoord" autocomplete="current-password">
+                    </div>
+                    <div class="veld">
+                        <label for="nieuwWachtwoord">Nieuw wachtwoord</label>
+                        <input type="password" id="nieuwWachtwoord" name="nieuwWachtwoord" minlength="8" autocomplete="new-password">
+                    </div>
+                </div>
+            </fieldset>
+            <button type="submit" class="knop">Opslaan</button>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

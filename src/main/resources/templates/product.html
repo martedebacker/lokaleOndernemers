@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${product.naam})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="winkel" th:style="${onderneming.kleurStijl}">
+<div class="container">
+    <div class="breadcrumb">
+        <a th:href="@{/regio/{id}(id=${onderneming.regio.id})}" th:text="${onderneming.regio.naam}"></a> ›
+        <a th:href="@{/winkel/{slug}(slug=${onderneming.slug})}" th:text="${onderneming.naam}"></a> ›
+        <span th:text="${product.naam}"></span>
+    </div>
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+    <div class="product-detail">
+        <div class="product-foto">
+            <th:block th:replace="~{fragments/layout :: foto(${product.afbeelding}, ${product.initiaal}, ${product.naam})}"></th:block>
+        </div>
+        <div>
+            <span class="badge badge-tag" th:if="${product.categorie}" th:text="${product.categorie}"></span>
+            <h1 class="mt" style="margin-top:8px" th:text="${product.naam}">Product</h1>
+            <p>
+                <span class="grote-prijs" th:text="${@fmt.euro(product.prijs)}">€ 0,00</span>
+                <span class="eenheid" th:if="${product.eenheid}" th:text="${product.eenheid}"></span>
+            </p>
+            <p class="pre" th:if="${product.beschrijving}" th:text="${product.beschrijving}"></p>
+
+            <div th:if="${product.opVoorraad}">
+                <p class="klein zacht" th:text="${onderneming.toonVoorraad and product.voorraad <= 5} ? 'Nog maar ' + ${product.voorraad} + ' beschikbaar' : 'Op voorraad'"></p>
+                <form th:action="@{/winkelmand/toevoegen}" method="post" class="rij">
+                    <input type="hidden" name="productId" th:value="${product.id}">
+                    <label for="aantal" class="klein">Aantal</label>
+                    <input id="aantal" class="aantal-invoer" type="number" name="aantal" value="1" min="1"
+                           th:max="${onderneming.toonVoorraad and product.voorraad < 99 ? product.voorraad : 99}">
+                    <button type="submit" class="knop">In winkelmand</button>
+                    <a th:if="${winkelmandAantal > 0}" th:href="@{/winkelmand}" class="knop knop-tweede">Naar winkelmand</a>
+                </form>
+            </div>
+            <div th:unless="${product.opVoorraad}" class="melding melding-info">
+                Dit product is momenteel uitverkocht. Kom later nog eens kijken of neem contact op met de ondernemer.
+            </div>
+
+            <div class="kaart kaart-inhoud mt afhaalkaart">
+                <strong>🤝 Persoonlijk afhalen</strong>
+                <p class="klein" style="margin:4px 0 0">
+                    Op te halen bij <a th:href="@{/winkel/{slug}(slug=${onderneming.slug})}" th:text="${onderneming.naam}"></a>,
+                    <span th:text="${onderneming.publiekAdres}"></span>. Betalen doe je bij het afhalen.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <section class="sectie" th:unless="${#lists.isEmpty(meer)}">
+        <div class="sectie-kop">
+            <h2>Meer van <span th:text="${onderneming.naam}"></span></h2>
+            <a th:href="@{/winkel/{slug}(slug=${onderneming.slug})}">Naar de winkel →</a>
+        </div>
+        <div class="raster">
+            <th:block th:each="p : ${meer}"><a th:replace="~{fragments/layout :: productkaart(${p})}"></a></th:block>
+        </div>
+    </section>
+</div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

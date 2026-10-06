@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Platformbeheer')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: adminkop('dashboard')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+    <div class="statistieken mt">
+        <a class="kaart statistiek" th:classappend="${aantalInAfwachting > 0} ? 'opvallend'" th:href="@{/admin/ondernemingen}" style="text-decoration:none;color:inherit">
+            <div class="getal" th:text="${aantalInAfwachting}">0</div>
+            <div class="label">Wachten op goedkeuring</div>
+        </a>
+        <div class="kaart statistiek">
+            <div class="getal" th:text="${aantalActief}">0</div>
+            <div class="label">Actieve ondernemingen</div>
+        </div>
+        <div class="kaart statistiek">
+            <div class="getal" th:text="${aantalKlanten}">0</div>
+            <div class="label">Klanten</div>
+        </div>
+        <a class="kaart statistiek" th:classappend="${aantalNieuweFeedback > 0} ? 'opvallend'" th:href="@{/admin/feedback}" style="text-decoration:none;color:inherit">
+            <div class="getal" th:text="${aantalNieuweFeedback}">0</div>
+            <div class="label">Nieuwe feedback</div>
+        </a>
+        <a class="kaart statistiek" th:href="@{/admin/bestellingen}" style="text-decoration:none;color:inherit">
+            <div class="getal" th:text="${aantalOpen} + ' / ' + ${aantalBestellingen}">0</div>
+            <div class="label">Open / alle bestellingen</div>
+        </a>
+    </div>
+
+    <section class="sectie" th:unless="${#lists.isEmpty(opstarthulpOpen)}">
+        <h2>Opstarthulp: winkels die wij inrichten</h2>
+        <p class="zacht klein" th:text="'Eenmalig ' + ${@fmt.euro(@platform.opstarthulpPrijs)} + ' per onderneming, te regelen buiten de website.'"></p>
+        <div th:replace="~{admin/ondernemingen :: opstarthulptabel(${opstarthulpOpen}, '/admin')}"></div>
+    </section>
+
+    <section class="sectie">
+        <h2>Nieuwe ondernemingen goedkeuren</h2>
+        <div class="kaart leeg" th:if="${#lists.isEmpty(teKeuren)}">
+            <div class="groot">✅</div>
+            <p>Er wachten geen ondernemingen op goedkeuring.</p>
+        </div>
+        <div class="kaart tabel-wrap" th:unless="${#lists.isEmpty(teKeuren)}">
+            <table>
+                <thead><tr><th>Onderneming</th><th>Eigenaar</th><th>Locatie</th><th>Aangemeld</th><th></th></tr></thead>
+                <tbody>
+                <tr th:each="o : ${teKeuren}">
+                    <td><a th:href="@{/winkel/{slug}(slug=${o.slug})}" target="_blank" th:text="${o.naam}"></a></td>
+                    <td>
+                        <span th:text="${o.eigenaar.volledigeNaam}"></span>
+                        <div class="zacht klein" th:text="${o.eigenaar.email}"></div>
+                    </td>
+                    <td th:text="${o.gemeente} + ' (' + ${o.regio.naam} + ')'"></td>
+                    <td th:text="${@fmt.datumTijd(o.aangemaaktOp)}"></td>
+                    <td class="rechts">
+                        <div class="rij" style="justify-content:flex-end">
+                            <form th:action="@{/admin/ondernemingen/{id}/status(id=${o.id})}" method="post" class="inline">
+                                <input type="hidden" name="status" value="ACTIEF">
+                                <input type="hidden" name="terug" value="/admin">
+                                <button class="knop knop-klein" type="submit">Goedkeuren</button>
+                            </form>
+                            <form th:action="@{/admin/ondernemingen/{id}/status(id=${o.id})}" method="post" class="inline">
+                                <input type="hidden" name="status" value="GEBLOKKEERD">
+                                <input type="hidden" name="terug" value="/admin">
+                                <button class="knop knop-gevaar knop-klein" type="submit">Weigeren</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

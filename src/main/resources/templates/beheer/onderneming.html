@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Winkelpagina')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: beheerkop('onderneming')}"></div>
+
+<main class="container middel">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <p class="zacht mt">Dit is je eigen mini-website op het platform. Klanten zien deze gegevens op
+        <a th:href="@{/winkel/{slug}(slug=${onderneming.slug})}" target="_blank" th:text="'/winkel/' + ${onderneming.slug}"></a>.</p>
+
+    <form th:action="@{/beheer/onderneming}" th:object="${form}" method="post" enctype="multipart/form-data" class="formulier">
+        <div th:replace="~{fragments/velden :: globalefouten}"></div>
+
+        <fieldset>
+            <legend>Voorstelling</legend>
+            <div class="formulier">
+                <div class="veld" th:classappend="${#fields.hasErrors('naam')} ? 'fout'">
+                    <label for="naam">Naam</label>
+                    <input type="text" th:field="*{naam}" required>
+                    <span class="veldfout" th:errors="*{naam}"></span>
+                </div>
+                <div class="veld" th:classappend="${#fields.hasErrors('slogan')} ? 'fout'">
+                    <label for="slogan">Slogan <span class="zacht">(één zin)</span></label>
+                    <input type="text" th:field="*{slogan}" placeholder="Bv. Ambachtelijk brood, elke ochtend vers.">
+                    <span class="veldfout" th:errors="*{slogan}"></span>
+                </div>
+                <div class="veld" th:classappend="${#fields.hasErrors('beschrijving')} ? 'fout'">
+                    <label for="beschrijving">Over je onderneming</label>
+                    <textarea th:field="*{beschrijving}" rows="6" placeholder="Vertel klanten wie je bent, wat je maakt en waarom."></textarea>
+                    <span class="veldfout" th:errors="*{beschrijving}"></span>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Uitstraling</legend>
+            <div class="formulier">
+                <div class="formulier-raster">
+                    <div class="veld">
+                        <label for="logo">Logo</label>
+                        <img th:if="${onderneming.logo != null}" class="voorbeeld-afbeelding" style="width:90px"
+                             th:src="@{/afbeelding/{id}(id=${onderneming.logo.id})}" alt="Huidig logo">
+                        <input type="file" id="logo" name="logo" accept="image/jpeg,image/png,image/webp,image/gif">
+                        <label class="vinkje klein" th:if="${onderneming.logo != null}"><input type="checkbox" th:field="*{logoVerwijderen}"> Logo verwijderen</label>
+                    </div>
+                    <div class="veld">
+                        <label for="banner">Bannerfoto</label>
+                        <img th:if="${onderneming.banner != null}" class="voorbeeld-afbeelding"
+                             th:src="@{/afbeelding/{id}(id=${onderneming.banner.id})}" alt="Huidige banner">
+                        <input type="file" id="banner" name="banner" accept="image/jpeg,image/png,image/webp,image/gif">
+                        <label class="vinkje klein" th:if="${onderneming.banner != null}"><input type="checkbox" th:field="*{bannerVerwijderen}"> Banner verwijderen</label>
+                    </div>
+                </div>
+                <span class="hulp">JPG, PNG, WebP of GIF, maximaal 5 MB.</span>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Kleurenpalet</legend>
+            <div class="formulier">
+                <div>
+                    <div class="klein zacht" style="margin-bottom:6px">Kies een kant-en-klaar palet of stel zelf je kleuren in:</div>
+                    <div class="paletten">
+                        <button type="button" class="palet" data-palet="#2f6f4f,#c0643b,#faf7f2"><span style="background:#2f6f4f"></span><span style="background:#c0643b"></span><span style="background:#faf7f2"></span><span class="palet-naam">Natuur</span></button>
+                        <button type="button" class="palet" data-palet="#b5651d,#7a3e12,#fdf6ec"><span style="background:#b5651d"></span><span style="background:#7a3e12"></span><span style="background:#fdf6ec"></span><span class="palet-naam">Bakkerij</span></button>
+                        <button type="button" class="palet" data-palet="#1f4e79,#e0a526,#f4f8fb"><span style="background:#1f4e79"></span><span style="background:#e0a526"></span><span style="background:#f4f8fb"></span><span class="palet-naam">Zee</span></button>
+                        <button type="button" class="palet" data-palet="#6a4c93,#d1495b,#faf6fc"><span style="background:#6a4c93"></span><span style="background:#d1495b"></span><span style="background:#faf6fc"></span><span class="palet-naam">Atelier</span></button>
+                        <button type="button" class="palet" data-palet="#8c2f39,#b8860b,#fbf7f1"><span style="background:#8c2f39"></span><span style="background:#b8860b"></span><span style="background:#fbf7f1"></span><span class="palet-naam">Wijn</span></button>
+                        <button type="button" class="palet" data-palet="#222222,#e4572e,#ffffff"><span style="background:#222222"></span><span style="background:#e4572e"></span><span style="background:#ffffff"></span><span class="palet-naam">Modern</span></button>
+                    </div>
+                </div>
+                <div class="formulier-raster">
+                    <div class="veld" th:classappend="${#fields.hasErrors('themaKleur')} ? 'fout'">
+                        <label for="themaKleur">Hoofdkleur</label>
+                        <input type="color" th:field="*{themaKleur}">
+                        <span class="hulp">Knoppen, prijzen en de banner zonder foto.</span>
+                        <span class="veldfout" th:errors="*{themaKleur}"></span>
+                    </div>
+                    <div class="veld" th:classappend="${#fields.hasErrors('accentKleur')} ? 'fout'">
+                        <label for="accentKleur">Accentkleur</label>
+                        <input type="color" th:field="*{accentKleur}">
+                        <span class="hulp">Titels, categorieën en labels.</span>
+                        <span class="veldfout" th:errors="*{accentKleur}"></span>
+                    </div>
+                    <div class="veld" th:classappend="${#fields.hasErrors('achtergrondKleur')} ? 'fout'">
+                        <label for="achtergrondKleur">Achtergrond</label>
+                        <input type="color" th:field="*{achtergrondKleur}">
+                        <span class="hulp">Kies best een lichte kleur, zodat tekst leesbaar blijft.</span>
+                        <span class="veldfout" th:errors="*{achtergrondKleur}"></span>
+                    </div>
+                </div>
+                <div>
+                    <div class="klein zacht" style="margin-bottom:6px">Voorbeeld</div>
+                    <div class="kleurvoorbeeld" id="kleurvoorbeeld">
+                        <div class="vb-banner"></div>
+                        <div class="vb-inhoud">
+                            <span class="vb-kop" th:text="*{naam}">Mijn winkel</span>
+                            <span class="vb-prijs">€ 4,20</span>
+                            <span class="vb-knop">In winkelmand</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="kaart kaart-inhoud">
+            <strong>✉️ E-mails aan je klanten</strong>
+            <p class="klein zacht" style="margin:4px 0 8px">Klanten krijgen een e-mail bij elke bestelling en bij elke wijziging ervan,
+                in jouw kleuren en met jouw logo. Antwoorden komen rechtstreeks bij jou terecht. Sla eerst op en bekijk dan een voorbeeld:</p>
+            <div class="rij">
+                <a class="knop knop-tweede knop-klein" target="_blank" th:href="@{/beheer/onderneming/mail-voorbeeld(status='GEPLAATST')}">Bestelling ontvangen</a>
+                <a class="knop knop-tweede knop-klein" target="_blank" th:href="@{/beheer/onderneming/mail-voorbeeld(status='BEVESTIGD')}">Bevestigd</a>
+                <a class="knop knop-tweede knop-klein" target="_blank" th:href="@{/beheer/onderneming/mail-voorbeeld(status='KLAAR')}">Klaar om af te halen</a>
+                <a class="knop knop-tweede knop-klein" target="_blank" th:href="@{/beheer/onderneming/mail-voorbeeld(status='AFGEHAALD')}">Afgehaald</a>
+            </div>
+        </div>
+
+        <fieldset>
+            <legend>Wat zien klanten op je winkelpagina?</legend>
+            <div class="zichtbaarheid">
+                <label class="vinkje"><input type="checkbox" th:field="*{toonAdres}">
+                    <span>Volledig adres<br><span class="hulp">Uit: klanten zien enkel je gemeente en krijgen het adres pas bij hun bestelling.</span></span></label>
+                <label class="vinkje"><input type="checkbox" th:field="*{toonOphaalInfo}">
+                    <span>Openingsuren &amp; ophaalmomenten</span></label>
+                <label class="vinkje"><input type="checkbox" th:field="*{toonTelefoon}">
+                    <span>Telefoonnummer<br><span class="hulp">Klanten met een bestelling zien het altijd.</span></span></label>
+                <label class="vinkje"><input type="checkbox" th:field="*{toonEmail}">
+                    <span>E-mailadres<br><span class="hulp">Klanten met een bestelling zien het altijd.</span></span></label>
+                <label class="vinkje"><input type="checkbox" th:field="*{toonVoorraad}">
+                    <span>Beperkte voorraad melden<br><span class="hulp">"Nog maar 3 beschikbaar" bij producten met weinig voorraad.</span></span></label>
+                <label class="vinkje"><input type="checkbox" th:field="*{toonEvenementen}">
+                    <span>Mijn evenementen</span></label>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Ophaaladres</legend>
+            <div class="formulier">
+                <div class="veld" th:classappend="${#fields.hasErrors('straat')} ? 'fout'">
+                    <label for="straat">Straat en huisnummer</label>
+                    <input type="text" th:field="*{straat}">
+                    <span class="veldfout" th:errors="*{straat}"></span>
+                </div>
+                <div class="formulier-raster">
+                    <div class="veld" th:classappend="${#fields.hasErrors('postcode')} ? 'fout'">
+                        <label for="postcode">Postcode</label>
+                        <input type="text" th:field="*{postcode}">
+                        <span class="veldfout" th:errors="*{postcode}"></span>
+                    </div>
+                    <div class="veld" th:classappend="${#fields.hasErrors('gemeente')} ? 'fout'">
+                        <label for="gemeente">Gemeente</label>
+                        <input type="text" th:field="*{gemeente}" required>
+                        <span class="veldfout" th:errors="*{gemeente}"></span>
+                    </div>
+                    <div class="veld" th:classappend="${#fields.hasErrors('regioId')} ? 'fout'">
+                        <label for="regioId">Regio</label>
+                        <select th:field="*{regioId}" required>
+                            <option th:each="r : ${regios}" th:value="${r.id}" th:text="${r.naam}">Regio</option>
+                        </select>
+                        <span class="veldfout" th:errors="*{regioId}"></span>
+                    </div>
+                </div>
+                <div class="veld" th:classappend="${#fields.hasErrors('ophaalInfo')} ? 'fout'">
+                    <label for="ophaalInfo">Openingsuren &amp; ophaalmomenten</label>
+                    <textarea th:field="*{ophaalInfo}" rows="4" placeholder="Bv.&#10;Di-za: 9u - 18u&#10;Zondag en maandag gesloten"></textarea>
+                    <span class="veldfout" th:errors="*{ophaalInfo}"></span>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Contact</legend>
+            <div class="formulier-raster">
+                <div class="veld" th:classappend="${#fields.hasErrors('telefoon')} ? 'fout'">
+                    <label for="telefoon">Telefoon</label>
+                    <input type="tel" th:field="*{telefoon}">
+                    <span class="veldfout" th:errors="*{telefoon}"></span>
+                </div>
+                <div class="veld" th:classappend="${#fields.hasErrors('email')} ? 'fout'">
+                    <label for="email">E-mailadres</label>
+                    <input type="email" th:field="*{email}">
+                    <span class="veldfout" th:errors="*{email}"></span>
+                </div>
+            </div>
+        </fieldset>
+
+        <div class="rij">
+            <button type="submit" class="knop">Opslaan</button>
+            <a class="knop knop-tweede" th:href="@{/winkel/{slug}(slug=${onderneming.slug})}" target="_blank">Bekijk winkelpagina ↗</a>
+        </div>
+    </form>
+</main>
+
+<script>
+    // Live voorbeeld van het kleurenpalet en snelkeuze uit kant-en-klare paletten.
+    (function () {
+        var velden = {thema: 'themaKleur', 'winkel-accent': 'accentKleur', 'winkel-achtergrond': 'achtergrondKleur'};
+        var voorbeeld = document.getElementById('kleurvoorbeeld');
+        function toon() {
+            Object.keys(velden).forEach(function (v) {
+                voorbeeld.style.setProperty('--' + v, document.getElementById(velden[v]).value);
+            });
+        }
+        Object.keys(velden).forEach(function (v) {
+            document.getElementById(velden[v]).addEventListener('input', toon);
+        });
+        document.querySelectorAll('[data-palet]').forEach(function (knop) {
+            knop.addEventListener('click', function () {
+                var kleuren = knop.getAttribute('data-palet').split(',');
+                ['themaKleur', 'accentKleur', 'achtergrondKleur'].forEach(function (id, i) {
+                    document.getElementById(id).value = kleuren[i];
+                });
+                toon();
+            });
+        });
+        toon();
+    })();
+</script>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Koop lokaal, haal persoonlijk op')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main>
+    <section class="hero">
+        <div class="container">
+            <h1>Koop rechtstreeks bij zelfstandigen uit jouw buurt</h1>
+            <p>Zelfstandige ondernemers (in bijberoep) uit jouw regio tonen hier hun producten. Je bestelt online en haalt je bestelling
+                persoonlijk op — een praatje inbegrepen.</p>
+            <form class="regiokiezer" th:action="@{/regio}" method="get">
+                <label for="regioId" class="zacht" style="position:absolute;left:-9999px">Kies je regio</label>
+                <select id="regioId" name="regioId" required>
+                    <option value="">Kies je regio…</option>
+                    <option th:each="r : ${regios}" th:value="${r.key.id}" th:text="${r.key.naam}">Regio</option>
+                </select>
+                <button type="submit" class="knop knop-accent">Ontdek je regio</button>
+            </form>
+        </div>
+    </section>
+
+    <div class="container">
+        <div th:replace="~{fragments/layout :: meldingen}"></div>
+        <div class="melding melding-succes" th:if="${param.uitgelogd}">Je bent uitgelogd. Tot ziens!</div>
+
+        <section class="sectie" id="regios">
+            <div class="sectie-kop">
+                <h2>Ontdek per regio</h2>
+            </div>
+            <div class="raster">
+                <a th:each="r : ${regios}" class="kaart regiotegel" th:href="@{/regio/{id}(id=${r.key.id})}">
+                    <div class="naam" th:text="${r.key.naam}">Regio</div>
+                    <div class="zacht klein" th:if="${r.key.beschrijving}" th:text="${r.key.beschrijving}"></div>
+                    <div class="klein mt" style="margin-top:8px"
+                         th:text="${r.value == 1} ? '1 onderneming' : ${r.value} + ' ondernemingen'">0 ondernemingen</div>
+                </a>
+            </div>
+        </section>
+
+        <section class="sectie" th:unless="${#lists.isEmpty(producten)}">
+            <div class="sectie-kop">
+                <h2>Nieuw in de etalage</h2>
+                <a th:href="@{/producten}">Alle producten →</a>
+            </div>
+            <div class="raster">
+                <th:block th:each="p : ${producten}"><a th:replace="~{fragments/layout :: productkaart(${p})}"></a></th:block>
+            </div>
+        </section>
+
+        <section class="sectie" th:unless="${#lists.isEmpty(evenementen)}">
+            <div class="sectie-kop">
+                <h2>Binnenkort te doen</h2>
+                <a th:href="@{/evenementen}">Alle evenementen →</a>
+            </div>
+            <div class="raster-breed">
+                <th:block th:each="e : ${evenementen}"><a th:replace="~{fragments/layout :: evenementkaart(${e})}"></a></th:block>
+            </div>
+        </section>
+
+        <section class="sectie" th:unless="${#lists.isEmpty(ondernemingen)}">
+            <div class="sectie-kop">
+                <h2>Ondernemers op het platform</h2>
+                <a th:href="@{/ondernemingen}">Alle ondernemingen →</a>
+            </div>
+            <div class="raster-breed">
+                <th:block th:each="o : ${ondernemingen}"><a th:replace="~{fragments/layout :: ondernemingkaart(${o})}"></a></th:block>
+            </div>
+        </section>
+
+        <section class="sectie">
+            <h2>Zo werkt het</h2>
+            <div class="stappen">
+                <div class="kaart stap"><h3>Kies je regio</h3><p class="zacht">Bekijk welke zelfstandigen er bij jou in de buurt actief zijn.</p></div>
+                <div class="kaart stap"><h3>Stel je bestelling samen</h3><p class="zacht">Leg producten in je winkelmand, ook van verschillende ondernemers.</p></div>
+                <div class="kaart stap"><h3>De ondernemer bevestigt</h3><p class="zacht">Je krijgt een bevestiging en een afgesproken ophaalmoment.</p></div>
+                <div class="kaart stap"><h3>Haal persoonlijk op</h3><p class="zacht">Er wordt niet geleverd: je haalt op bij de ondernemer en rekent daar af.</p></div>
+            </div>
+        </section>
+
+        <section class="sectie">
+            <div class="kaart kaart-inhoud rij-tussen">
+                <div>
+                    <h2 style="margin-bottom:4px">Ben je zelfstandige?</h2>
+                    <p class="zacht" style="margin:0">Maak gratis je eigen winkelpagina, toon je producten en ontvang bestellingen van klanten uit je regio.</p>
+                </div>
+                <a th:href="@{/registreren/ondernemer}" class="knop knop-accent">Open je winkel</a>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

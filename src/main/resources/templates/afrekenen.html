@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bestelling plaatsen')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <div class="breadcrumb"><a th:href="@{/winkelmand}">Winkelmand</a> › Bestelling plaatsen</div>
+    <h1>Bestelling plaatsen</h1>
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+    <div class="twee-kolommen">
+        <div>
+            <div class="kaart kaart-inhoud mb afhaalkaart" th:each="g : ${groepen}">
+                <div class="rij-tussen">
+                    <strong th:text="${g.onderneming.naam}"></strong>
+                    <strong th:text="${@fmt.euro(g.totaal)}"></strong>
+                </div>
+                <ul class="klein" style="margin:8px 0">
+                    <li th:each="r : ${g.regels}" th:text="${r.aantal} + ' × ' + ${r.product.naam}"></li>
+                </ul>
+                <div class="klein">
+                    <strong>Ophaaladres:</strong> <span th:text="${g.onderneming.publiekAdres}"></span>
+                    <span class="zacht" th:unless="${g.onderneming.toonAdres}">(het exacte adres zie je na het bestellen)</span>
+                </div>
+                <div class="klein pre zacht" th:if="${g.onderneming.toonOphaalInfo and g.onderneming.ophaalInfo != null}" th:text="${g.onderneming.ophaalInfo}"></div>
+            </div>
+        </div>
+
+        <aside class="kaart kaart-inhoud">
+            <form th:action="@{/afrekenen}" th:object="${form}" method="post" class="formulier">
+                <div th:replace="~{fragments/velden :: globalefouten}"></div>
+                <div class="veld" th:classappend="${#fields.hasErrors('gewensteOphaaldatum')} ? 'fout'">
+                    <label for="gewensteOphaaldatum">Wanneer wil je ophalen?</label>
+                    <input type="date" th:field="*{gewensteOphaaldatum}" th:min="${@fmt.vandaag()}" required>
+                    <span class="hulp">De ondernemer bevestigt het definitieve ophaalmoment.</span>
+                    <span class="veldfout" th:errors="*{gewensteOphaaldatum}"></span>
+                </div>
+                <div class="veld" th:classappend="${#fields.hasErrors('opmerking')} ? 'fout'">
+                    <label for="opmerking">Opmerking voor de ondernemer <span class="zacht">(optioneel)</span></label>
+                    <textarea th:field="*{opmerking}" maxlength="1000" placeholder="Bv. liefst na 17u, graag gesneden…"></textarea>
+                    <span class="veldfout" th:errors="*{opmerking}"></span>
+                </div>
+                <div class="rij-tussen">
+                    <span>Te betalen bij afhaling</span>
+                    <strong style="font-size:1.4rem" th:text="${@fmt.euro(totaal)}"></strong>
+                </div>
+                <p class="klein zacht" style="margin:0" th:if="${#lists.size(groepen) > 1}"
+                   th:text="'Je plaatst ' + ${#lists.size(groepen)} + ' aparte bestellingen, één per ondernemer.'"></p>
+                <button type="submit" class="knop knop-blok">Bestelling bevestigen</button>
+            </form>
+        </aside>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

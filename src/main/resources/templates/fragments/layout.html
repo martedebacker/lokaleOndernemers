@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:fragment="head(titel)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titel} + ' · Lokale Ondernemers'">Lokale Ondernemers</title>
+    <meta name="description" content="Koop rechtstreeks bij zelfstandige ondernemers uit jouw regio en haal je bestelling persoonlijk op.">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<header th:fragment="header" class="site-header">
+    <div class="container">
+        <a th:href="@{/}" class="logo"><span class="logo-teken">LO</span> Lokale Ondernemers</a>
+        <nav class="hoofdnav" aria-label="Hoofdmenu">
+            <a th:href="@{/} + '#regios'">Regio's</a>
+            <a th:href="@{/ondernemingen}">Ondernemingen</a>
+            <a th:href="@{/producten}">Producten</a>
+            <a th:href="@{/evenementen}">Evenementen</a>
+            <a th:href="@{/hoe-werkt-het}">Hoe werkt het?</a>
+        </nav>
+        <nav class="gebruikersnav" aria-label="Account">
+            <a th:href="@{/winkelmand}">🧺 Winkelmand<span class="mand-teller" th:if="${winkelmandAantal > 0}" th:text="${winkelmandAantal}">0</span></a>
+            <th:block sec:authorize="isAnonymous()">
+                <a th:href="@{/login}">Inloggen</a>
+                <a th:href="@{/registreren}" class="knop knop-klein">Registreren</a>
+            </th:block>
+            <th:block sec:authorize="isAuthenticated()">
+                <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin}">Platformbeheer</a>
+                <a sec:authorize="hasRole('ONDERNEMER')" th:href="@{/beheer}">Mijn winkel</a>
+                <a th:href="@{/mijn/bestellingen}">Mijn bestellingen</a>
+                <a th:href="@{/mijn/profiel}" th:text="${ingelogd != null ? ingelogd.voornaam : 'Profiel'}">Profiel</a>
+                <form th:action="@{/uitloggen}" method="post">
+                    <button type="submit" class="link-knop">Uitloggen</button>
+                </form>
+            </th:block>
+        </nav>
+    </div>
+</header>
+
+<div th:fragment="meldingen">
+    <div class="melding melding-succes" th:if="${succes}" th:text="${succes}" role="status"></div>
+    <div class="melding melding-fout" th:if="${fout}" th:text="${fout}" role="alert"></div>
+</div>
+
+<footer th:fragment="footer" class="site-footer">
+    <div class="container">
+        <div>
+            <h3>Lokale Ondernemers</h3>
+            <p>Koop rechtstreeks bij zelfstandigen uit je buurt. Je haalt je bestelling persoonlijk op: zo blijft het contact
+                tussen klant en ondernemer behouden.</p>
+        </div>
+        <div>
+            <h3>Ontdekken</h3>
+            <ul>
+                <li><a th:href="@{/ondernemingen}">Alle ondernemingen</a></li>
+                <li><a th:href="@{/producten}">Alle producten</a></li>
+                <li><a th:href="@{/evenementen}">Evenementen</a></li>
+                <li><a th:href="@{/hoe-werkt-het}">Hoe werkt het?</a></li>
+            </ul>
+        </div>
+        <div>
+            <h3>Voor ondernemers</h3>
+            <ul>
+                <li><a th:href="@{/registreren/ondernemer}">Open je eigen winkel</a></li>
+                <li><a th:href="@{/login}">Inloggen</a></li>
+            </ul>
+        </div>
+    </div>
+</footer>
+
+<!-- Afbeelding of placeholder met initiaal -->
+<th:block th:fragment="foto(afbeelding, initiaal, alt)">
+    <img th:if="${afbeelding != null}" th:src="@{/afbeelding/{id}(id=${afbeelding.id})}" th:alt="${alt}" loading="lazy">
+    <div th:unless="${afbeelding != null}" class="placeholder" th:text="${initiaal}" aria-hidden="true">?</div>
+</th:block>
+
+<a th:fragment="productkaart(p)" class="kaart productkaart" th:href="@{/product/{id}(id=${p.id})}"
+   th:style="'--thema:' + ${p.onderneming.themaKleur}">
+    <div class="foto">
+        <th:block th:replace="~{fragments/layout :: foto(${p.afbeelding}, ${p.initiaal}, ${p.naam})}"></th:block>
+    </div>
+    <div class="info">
+        <span class="naam" th:text="${p.naam}">Product</span>
+        <span class="winkel" th:text="${p.onderneming.naam} + ' · ' + ${p.onderneming.gemeente}">Winkel</span>
+        <span class="prijs">
+            <span th:text="${@fmt.euro(p.prijs)}">€ 0,00</span>
+            <span class="eenheid" th:if="${p.eenheid}" th:text="${p.eenheid}"></span>
+        </span>
+        <span class="badge badge-GEANNULEERD" th:unless="${p.opVoorraad}" style="align-self:flex-start">Uitverkocht</span>
+    </div>
+</a>
+
+<a th:fragment="ondernemingkaart(o)" class="kaart ondernemingkaart" th:href="@{/winkel/{slug}(slug=${o.slug})}"
+   th:style="'--thema:' + ${o.themaKleur}">
+    <div class="logo-rond">
+        <th:block th:replace="~{fragments/layout :: foto(${o.logo}, ${o.initiaal}, ${o.naam})}"></th:block>
+    </div>
+    <div>
+        <div class="naam" th:text="${o.naam}">Onderneming</div>
+        <div class="zacht klein" th:if="${o.slogan}" th:text="${o.slogan}"></div>
+        <div class="zacht klein" th:text="'📍 ' + ${o.gemeente} + ' · ' + ${o.regio.naam}">Gemeente</div>
+    </div>
+</a>
+
+<a th:fragment="evenementkaart(e)" class="kaart evenementkaart" th:href="@{/evenementen/{id}(id=${e.id})}">
+    <div class="datumblok">
+        <span class="dag" th:text="${@fmt.dag(e.startMoment)}">1</span>
+        <span class="maand" th:text="${@fmt.maandKort(e.startMoment)}">jan</span>
+    </div>
+    <div class="evenement-info">
+        <div class="naam" th:text="${e.titel}">Evenement</div>
+        <div class="zacht klein" th:text="${@fmt.periode(e.startMoment, e.eindMoment)}"></div>
+        <div class="zacht klein" th:text="'📍 ' + ${e.locatie} + ', ' + ${e.gemeente}"></div>
+        <div class="klein organisator">
+            <span th:if="${e.doorPlatform}">Georganiseerd door Lokale Ondernemers</span>
+            <span th:unless="${e.doorPlatform}" th:text="'Door ' + ${#strings.listJoin(e.betrokkenOndernemingen.![naam], ', ')}"></span>
+        </div>
+    </div>
+</a>
+
+<!-- Uitleg over de testfase voor ondernemers -->
+<div th:fragment="testfase" class="testfase">
+    <h3>🧪 We zitten in een testfase tot <span th:text="${@platform.testfaseEindeTekst}">1 februari</span></h3>
+    <ul class="klein">
+        <li>Tot <strong th:text="${@platform.testfaseEindeTekst}"></strong> is Lokale Ondernemers <strong>volledig gratis</strong> voor ondernemers.</li>
+        <li>Staat de website tegen dan op punt, dan rekenen we daarna een <strong>maandelijkse kost</strong> aan. We laten je ruim op voorhand weten hoeveel dat is.</li>
+        <li>Je beslist dan <strong>geheel vrijblijvend</strong> of je verder doet of niet. Stop je, dan betaal je niets.</li>
+        <li>Jouw feedback tijdens de testfase helpt ons het platform beter te maken.</li>
+    </ul>
+</div>
+
+<span th:fragment="status(s)" th:class="'badge badge-' + ${s.name()}" th:text="${s.label}">Status</span>
+
+<div th:fragment="beheerkop(actief)" class="beheer-kop">
+    <div class="beheer-als" th:if="${ingelogd != null and ingelogd.rol.name() == 'ADMIN'}">
+        <div class="container rij-tussen">
+            <span>🛠️ Je richt deze winkel in als beheerder. Wijzigingen worden opgeslagen voor <strong th:text="${onderneming.naam}"></strong>.</span>
+            <form th:action="@{/admin/beheren/stoppen}" method="post" class="inline">
+                <button type="submit" class="knop knop-tweede knop-klein">Terug naar platformbeheer</button>
+            </form>
+        </div>
+    </div>
+    <div class="container">
+        <div class="rij-tussen">
+            <div>
+                <div class="zacht klein">Mijn winkel</div>
+                <h1 th:text="${onderneming.naam}">Onderneming</h1>
+            </div>
+            <div class="rij">
+                <span th:replace="~{fragments/layout :: status(${onderneming.status})}"></span>
+                <a class="knop knop-tweede knop-klein" th:href="@{/winkel/{slug}(slug=${onderneming.slug})}" target="_blank">Bekijk mijn winkelpagina ↗</a>
+            </div>
+        </div>
+        <nav class="subnav" aria-label="Beheer">
+            <a th:href="@{/beheer}" th:classappend="${actief == 'dashboard'} ? 'actief'">Overzicht</a>
+            <a th:href="@{/beheer/bestellingen}" th:classappend="${actief == 'bestellingen'} ? 'actief'">Bestellingen</a>
+            <a th:href="@{/beheer/producten}" th:classappend="${actief == 'producten'} ? 'actief'">Producten</a>
+            <a th:href="@{/beheer/evenementen}" th:classappend="${actief == 'evenementen'} ? 'actief'">Evenementen</a>
+            <a th:href="@{/beheer/onderneming}" th:classappend="${actief == 'onderneming'} ? 'actief'">Winkelpagina</a>
+            <a th:href="@{/beheer/feedback}" th:classappend="${actief == 'feedback'} ? 'actief'">Feedback</a>
+        </nav>
+    </div>
+</div>
+
+<div th:fragment="adminkop(actief)" class="beheer-kop">
+    <div class="container">
+        <div class="zacht klein">Platformbeheer</div>
+        <h1>Beheer</h1>
+        <nav class="subnav" aria-label="Platformbeheer">
+            <a th:href="@{/admin}" th:classappend="${actief == 'dashboard'} ? 'actief'">Overzicht</a>
+            <a th:href="@{/admin/ondernemingen}" th:classappend="${actief == 'ondernemingen'} ? 'actief'">Ondernemingen</a>
+            <a th:href="@{/admin/regios}" th:classappend="${actief == 'regios'} ? 'actief'">Regio's</a>
+            <a th:href="@{/admin/evenementen}" th:classappend="${actief == 'evenementen'} ? 'actief'">Evenementen</a>
+            <a th:href="@{/admin/gebruikers}" th:classappend="${actief == 'gebruikers'} ? 'actief'">Gebruikers</a>
+            <a th:href="@{/admin/bestellingen}" th:classappend="${actief == 'bestellingen'} ? 'actief'">Bestellingen</a>
+            <a th:href="@{/admin/feedback}" th:classappend="${actief == 'feedback'} ? 'actief'">Feedback</a>
+        </nav>
+    </div>
+</div>
+
+</body>
+</html>

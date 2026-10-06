@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Er ging iets mis')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container smal">
+    <div class="kaart leeg mt">
+        <div class="groot">⚠️</div>
+        <h1>Er ging iets mis</h1>
+        <p>Probeer het later opnieuw. Blijft het probleem zich voordoen, neem dan contact op met de beheerder.</p>
+        <a th:href="@{/}" class="knop">Naar de startpagina</a>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

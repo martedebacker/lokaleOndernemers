@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Gebruikers beheren')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: adminkop('gebruikers')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <h2 class="mt">Gebruikers</h2>
+
+    <div class="kaart tabel-wrap">
+        <table>
+            <thead><tr><th>Naam</th><th>E-mail</th><th>Rol</th><th>Lid sinds</th><th>Account</th></tr></thead>
+            <tbody>
+            <tr th:each="g : ${gebruikers}">
+                <td th:text="${g.volledigeNaam}"></td>
+                <td>
+                    <span th:text="${g.email}"></span>
+                    <div class="zacht klein" th:if="${g.telefoon}" th:text="${g.telefoon}"></div>
+                </td>
+                <td>
+                    <span th:if="${g.rol.name() == 'ONDERNEMER' or g.id == ingelogd.id}" th:text="${g.rol.label}"></span>
+                    <form th:unless="${g.rol.name() == 'ONDERNEMER' or g.id == ingelogd.id}"
+                          th:action="@{/admin/gebruikers/{id}/rol(id=${g.id})}" method="post" class="rij" style="flex-wrap:nowrap">
+                        <select name="rol" aria-label="Rol" style="width:auto">
+                            <option value="KLANT" th:selected="${g.rol.name() == 'KLANT'}">Klant</option>
+                            <option value="ADMIN" th:selected="${g.rol.name() == 'ADMIN'}">Beheerder</option>
+                        </select>
+                        <button type="submit" class="knop knop-tweede knop-klein">Opslaan</button>
+                    </form>
+                </td>
+                <td th:text="${@fmt.datumTijd(g.aangemaaktOp)}"></td>
+                <td>
+                    <span th:if="${g.id == ingelogd.id}" class="zacht klein">Dit ben jij</span>
+                    <form th:unless="${g.id == ingelogd.id}" th:action="@{/admin/gebruikers/{id}/actief(id=${g.id})}" method="post" class="inline">
+                        <input type="hidden" name="actief" th:value="${!g.actief}">
+                        <button type="submit" class="knop knop-klein" th:classappend="${g.actief} ? 'knop-gevaar' : ''"
+                                th:text="${g.actief} ? 'Blokkeren' : 'Activeren'">Blokkeren</button>
+                    </form>
+                    <span th:unless="${g.actief}" class="badge badge-GEBLOKKEERD">Geblokkeerd</span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

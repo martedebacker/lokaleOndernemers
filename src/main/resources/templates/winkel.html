@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${onderneming.naam})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="winkel" th:style="${onderneming.kleurStijl}">
+    <div class="container" th:unless="${onderneming.actief}">
+        <div class="melding melding-info">
+            <strong>Voorbeeldweergave.</strong> Deze winkelpagina is nog niet zichtbaar voor klanten
+            (status: <span th:text="${onderneming.status.label}"></span>).
+        </div>
+    </div>
+
+    <div class="winkel-banner" th:classappend="${onderneming.banner != null} ? 'met-foto'"
+         th:style="${onderneming.banner != null} ? 'background-image:url(' + @{/afbeelding/{id}(id=${onderneming.banner.id})} + ')' : ''"></div>
+
+    <div class="container">
+        <div class="winkel-kop">
+            <div class="logo-rond">
+                <th:block th:replace="~{fragments/layout :: foto(${onderneming.logo}, ${onderneming.initiaal}, ${onderneming.naam})}"></th:block>
+            </div>
+            <div class="tekst">
+                <h1 th:text="${onderneming.naam}">Onderneming</h1>
+                <div class="zacht" th:if="${onderneming.slogan}" th:text="${onderneming.slogan}"></div>
+            </div>
+            <div class="rij">
+                <span class="badge badge-tag" th:text="'📍 ' + ${onderneming.gemeente}"></span>
+                <a class="badge badge-tag" th:href="@{/regio/{id}(id=${onderneming.regio.id})}" th:text="${onderneming.regio.naam}"></a>
+            </div>
+        </div>
+
+        <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+        <div class="twee-kolommen mt">
+            <div>
+                <section th:if="${onderneming.beschrijving}" class="mb">
+                    <h2>Over ons</h2>
+                    <p class="pre" th:text="${onderneming.beschrijving}"></p>
+                </section>
+
+                <section>
+                    <h2>Ons aanbod</h2>
+                    <div th:each="cat : ${productenPerCategorie}">
+                        <h3 class="categorie-kop" th:text="${cat.key}">Categorie</h3>
+                        <div class="raster">
+                            <th:block th:each="p : ${cat.value}"><a th:replace="~{fragments/layout :: productkaart(${p})}"></a></th:block>
+                        </div>
+                    </div>
+                    <div class="kaart leeg" th:if="${#maps.isEmpty(productenPerCategorie)}">
+                        <div class="groot">🧺</div>
+                        <p>Er staan nog geen producten online.</p>
+                    </div>
+                </section>
+
+                <section class="mt" th:if="${onderneming.toonEvenementen and !#lists.isEmpty(evenementen)}">
+                    <h2>Kom langs op</h2>
+                    <div class="raster-breed">
+                        <th:block th:each="e : ${evenementen}"><a th:replace="~{fragments/layout :: evenementkaart(${e})}"></a></th:block>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="kaart">
+                <div class="kaart-inhoud info-blok">
+                    <h3><span class="afhaal-pictogram">🤝</span> Afhalen</h3>
+                    <p class="klein">Bestellingen worden niet geleverd. Je haalt ze persoonlijk op en rekent af bij ons.</p>
+                    <p style="margin:0"><strong th:text="${onderneming.publiekAdres}">Adres</strong></p>
+                    <p class="klein zacht" style="margin:0" th:unless="${onderneming.toonAdres}">Het exacte ophaaladres krijg je bij je bestelling.</p>
+                    <a class="klein" target="_blank" rel="noopener" th:if="${onderneming.toonAdres}"
+                       th:href="'https://www.google.com/maps/search/?api=1&query=' + ${#uris.escapeQueryParam(onderneming.volledigAdres)}">Bekijk op kaart ↗</a>
+                </div>
+                <div class="kaart-inhoud info-blok" th:if="${onderneming.toonOphaalInfo and onderneming.ophaalInfo != null}">
+                    <h3>Openingsuren &amp; ophaalmomenten</h3>
+                    <p class="pre klein" style="margin:0" th:text="${onderneming.ophaalInfo}"></p>
+                </div>
+                <div class="kaart-inhoud info-blok" th:if="${(onderneming.toonTelefoon and onderneming.telefoon != null) or (onderneming.toonEmail and onderneming.email != null)}">
+                    <h3>Contact</h3>
+                    <p class="klein" style="margin:0">
+                        <span th:if="${onderneming.toonTelefoon and onderneming.telefoon != null}">📞 <a th:href="'tel:' + ${onderneming.telefoon}" th:text="${onderneming.telefoon}"></a><br></span>
+                        <span th:if="${onderneming.toonEmail and onderneming.email != null}">✉️ <a th:href="'mailto:' + ${onderneming.email}" th:text="${onderneming.email}"></a></span>
+                    </p>
+                </div>
+            </aside>
+        </div>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${regio.naam})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <div class="breadcrumb"><a th:href="@{/}">Home</a> › Regio's › <span th:text="${regio.naam}"></span></div>
+
+    <div class="rij-tussen mb">
+        <div>
+            <h1 th:text="'Lokaal in ' + ${regio.naam}">Regio</h1>
+            <p class="zacht" th:if="${regio.beschrijving}" th:text="${regio.beschrijving}" style="margin:0"></p>
+        </div>
+        <form th:action="@{/regio}" method="get" class="rij">
+            <label for="regioId" class="klein zacht">Andere regio:</label>
+            <select id="regioId" name="regioId" onchange="this.form.submit()" style="width:auto">
+                <option th:each="r : ${alleRegios}" th:value="${r.id}" th:text="${r.naam}"
+                        th:selected="${r.id == regio.id}">Regio</option>
+            </select>
+            <noscript><button class="knop knop-klein" type="submit">Toon</button></noscript>
+        </form>
+    </div>
+
+    <form class="zoekbalk" th:action="@{/regio/{id}(id=${regio.id})}" method="get">
+        <input type="search" name="zoek" th:value="${zoek}" placeholder="Zoek een product of ondernemer in deze regio…" aria-label="Zoeken">
+        <button class="knop" type="submit">Zoeken</button>
+        <a th:if="${zoek}" class="knop knop-tweede" th:href="@{/regio/{id}(id=${regio.id})}">Wis</a>
+    </form>
+
+    <section class="sectie" style="padding-top:0">
+        <div class="sectie-kop">
+            <h2>Ondernemingen <span class="zacht klein" th:text="'(' + ${#lists.size(ondernemingen)} + ')'"></span></h2>
+        </div>
+        <div class="raster-breed" th:unless="${#lists.isEmpty(ondernemingen)}">
+            <th:block th:each="o : ${ondernemingen}"><a th:replace="~{fragments/layout :: ondernemingkaart(${o})}"></a></th:block>
+        </div>
+        <div class="kaart leeg" th:if="${#lists.isEmpty(ondernemingen)}">
+            <div class="groot">🏪</div>
+            <p th:text="${zoek} ? 'Geen ondernemingen gevonden voor je zoekopdracht.' : 'Er zijn nog geen ondernemingen actief in deze regio.'"></p>
+            <a th:href="@{/registreren/ondernemer}">Ben jij de eerste?</a>
+        </div>
+    </section>
+
+    <section class="sectie" th:unless="${#lists.isEmpty(evenementen)}">
+        <div class="sectie-kop">
+            <h2>Te doen in <span th:text="${regio.naam}"></span></h2>
+            <a th:href="@{/evenementen(regio=${regio.id})}">Alle evenementen →</a>
+        </div>
+        <div class="raster-breed">
+            <th:block th:each="e : ${evenementen}"><a th:replace="~{fragments/layout :: evenementkaart(${e})}"></a></th:block>
+        </div>
+    </section>
+
+    <section class="sectie">
+        <div class="sectie-kop">
+            <h2>Producten in <span th:text="${regio.naam}"></span></h2>
+        </div>
+        <div class="raster" th:unless="${#lists.isEmpty(producten)}">
+            <th:block th:each="p : ${producten}"><a th:replace="~{fragments/layout :: productkaart(${p})}"></a></th:block>
+        </div>
+        <div class="kaart leeg" th:if="${#lists.isEmpty(producten)}">
+            <div class="groot">🧺</div>
+            <p>Nog geen producten gevonden in deze regio.</p>
+        </div>
+    </section>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

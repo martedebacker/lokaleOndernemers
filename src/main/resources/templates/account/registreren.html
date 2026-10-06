@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Registreren')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container middel">
+    <div class="kaart kaart-inhoud mt">
+        <h1>Account aanmaken</h1>
+        <p class="zacht">Met een klantenaccount kan je bestellen bij lokale ondernemers en je bestellingen opvolgen.
+            Ben je zelf ondernemer? <a th:href="@{/registreren/ondernemer}">Registreer je onderneming</a>.</p>
+
+        <form th:action="@{/registreren}" th:object="${form}" method="post" class="formulier" novalidate>
+            <div th:replace="~{fragments/velden :: globalefouten}"></div>
+            <th:block th:replace="~{fragments/velden :: accountvelden}"></th:block>
+            <button type="submit" class="knop">Account aanmaken</button>
+        </form>
+        <p class="klein zacht mt">Heb je al een account? <a th:href="@{/login}">Log in</a>.</p>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

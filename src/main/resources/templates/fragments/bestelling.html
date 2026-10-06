@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- Voortgang van een bestelling -->
+<ul th:fragment="tijdlijn(b)" class="tijdlijn">
+    <th:block th:if="${b.status.name() == 'GEANNULEERD'}">
+        <li class="gedaan" style="background:var(--fout-bg);color:var(--fout)">Geannuleerd</li>
+    </th:block>
+    <th:block th:unless="${b.status.name() == 'GEANNULEERD'}">
+        <li class="gedaan">Geplaatst</li>
+        <li th:classappend="${b.status.name() == 'BEVESTIGD' or b.status.name() == 'KLAAR' or b.status.name() == 'AFGEHAALD'} ? 'gedaan'">Bevestigd</li>
+        <li th:classappend="${b.status.name() == 'KLAAR' or b.status.name() == 'AFGEHAALD'} ? 'gedaan'">Klaar om af te halen</li>
+        <li th:classappend="${b.status.name() == 'AFGEHAALD'} ? 'gedaan'">Afgehaald</li>
+    </th:block>
+</ul>
+
+<!-- Tabel met bestelde producten -->
+<div th:fragment="regels(b)" class="kaart tabel-wrap">
+    <table>
+        <thead><tr><th>Product</th><th>Prijs</th><th>Aantal</th><th class="rechts">Subtotaal</th></tr></thead>
+        <tbody>
+        <tr th:each="r : ${b.regels}">
+            <td th:text="${r.productNaam}"></td>
+            <td><span th:text="${@fmt.euro(r.prijs)}"></span> <span class="eenheid" th:if="${r.eenheid}" th:text="${r.eenheid}"></span></td>
+            <td th:text="${r.aantal}"></td>
+            <td class="rechts" th:text="${@fmt.euro(r.subtotaal)}"></td>
+        </tr>
+        <tr class="totaalrij">
+            <td colspan="3">Totaal (te betalen bij afhaling)</td>
+            <td class="rechts" th:text="${@fmt.euro(b.totaal)}"></td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Open je winkel')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container middel">
+    <div class="kaart kaart-inhoud mt">
+        <h1>Open je winkel</h1>
+        <p class="zacht">Registreer je onderneming en krijg je eigen winkelpagina. Na goedkeuring door een beheerder is
+            je winkel zichtbaar voor klanten. Klanten halen hun bestelling persoonlijk bij jou op.</p>
+
+        <div th:replace="~{fragments/layout :: testfase}" class="mb"></div>
+
+        <form th:action="@{/registreren/ondernemer}" th:object="${form}" method="post" class="formulier mt" novalidate>
+            <div th:replace="~{fragments/velden :: globalefouten}"></div>
+
+            <fieldset>
+                <legend>Je onderneming</legend>
+                <div class="formulier">
+                    <div class="formulier-raster">
+                        <div class="veld" th:classappend="${#fields.hasErrors('ondernemingNaam')} ? 'fout'">
+                            <label for="ondernemingNaam">Naam van je onderneming</label>
+                            <input type="text" th:field="*{ondernemingNaam}" required>
+                            <span class="veldfout" th:errors="*{ondernemingNaam}"></span>
+                        </div>
+                        <div class="veld" th:classappend="${#fields.hasErrors('regioId')} ? 'fout'">
+                            <label for="regioId">Regio</label>
+                            <select th:field="*{regioId}" required>
+                                <option value="">Kies…</option>
+                                <option th:each="r : ${regios}" th:value="${r.id}" th:text="${r.naam}">Regio</option>
+                            </select>
+                            <span class="veldfout" th:errors="*{regioId}"></span>
+                        </div>
+                    </div>
+                    <div class="veld" th:classappend="${#fields.hasErrors('straat')} ? 'fout'">
+                        <label for="straat">Straat en huisnummer <span class="zacht">(ophaaladres)</span></label>
+                        <input type="text" th:field="*{straat}" autocomplete="street-address">
+                        <span class="veldfout" th:errors="*{straat}"></span>
+                    </div>
+                    <div class="formulier-raster">
+                        <div class="veld" th:classappend="${#fields.hasErrors('postcode')} ? 'fout'">
+                            <label for="postcode">Postcode</label>
+                            <input type="text" th:field="*{postcode}" autocomplete="postal-code">
+                            <span class="veldfout" th:errors="*{postcode}"></span>
+                        </div>
+                        <div class="veld" th:classappend="${#fields.hasErrors('gemeente')} ? 'fout'">
+                            <label for="gemeente">Gemeente</label>
+                            <input type="text" th:field="*{gemeente}" required>
+                            <span class="veldfout" th:errors="*{gemeente}"></span>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Jouw account</legend>
+                <div class="formulier">
+                    <th:block th:replace="~{fragments/velden :: accountvelden}"></th:block>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Wie maakt je winkelpagina in orde?</legend>
+                <div class="keuzekaarten">
+                    <label class="keuzekaart">
+                        <input type="radio" name="opstarthulp" value="false" th:checked="${!form.opstarthulp}">
+                        <span><strong>Ik doe het zelf</strong>
+                            <span class="klein zacht">Je stelt je logo, kleuren, teksten en producten zelf in. Producten kan je ook in één keer uit Excel importeren. Gratis.</span></span>
+                    </label>
+                    <label class="keuzekaart">
+                        <input type="radio" name="opstarthulp" value="true" th:checked="${form.opstarthulp}">
+                        <span><strong>Laat het ons doen <span class="prijslabel" th:text="${@fmt.euro(@platform.opstarthulpPrijs)} + ' eenmalig'">€ 40</span></strong>
+                            <span class="klein zacht">Wij richten je winkelpagina voor je in en zetten alles naar wens goed: uitstraling, teksten en producten. We nemen contact met je op.</span></span>
+                    </label>
+                </div>
+                <input type="hidden" name="_opstarthulp" value="on">
+                <div class="veld mt" th:classappend="${#fields.hasErrors('opstartWensen')} ? 'fout'">
+                    <label for="opstartWensen">Wat wil je graag op je pagina? <span class="zacht">(enkel als wij het inrichten)</span></label>
+                    <textarea th:field="*{opstartWensen}" rows="3" placeholder="Bv. sfeer en kleuren die je mooi vindt, je producten en prijzen, je openingsuren, een link naar je bestaande website of Instagram…"></textarea>
+                    <span class="veldfout" th:errors="*{opstartWensen}"></span>
+                </div>
+                <p class="hulp" style="margin:0" th:text="'De opstarthulp kost eenmalig ' + ${@fmt.euro(@platform.opstarthulpPrijs)} + '. Betalen gebeurt niet via de website: we bespreken dit persoonlijk met je.'"></p>
+            </fieldset>
+
+            <div class="veld" th:classappend="${#fields.hasErrors('akkoordTestfase')} ? 'fout'">
+                <label class="vinkje"><input type="checkbox" th:field="*{akkoordTestfase}">
+                    <span th:text="'Ik heb gelezen dat het platform gratis is tot ' + ${@platform.testfaseEindeTekst} + ' en dat ik daarna vrijblijvend kies of ik verder doe tegen een maandelijkse kost.'"></span></label>
+                <span class="veldfout" th:errors="*{akkoordTestfase}"></span>
+            </div>
+
+            <button type="submit" class="knop knop-accent">Onderneming registreren</button>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

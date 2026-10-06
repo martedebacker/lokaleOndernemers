@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Geen toegang')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<main class="container smal">
+    <div class="kaart leeg mt">
+        <div class="groot">🔒</div>
+        <h1>Geen toegang</h1>
+        <p>Je hebt geen toegang tot deze pagina.</p>
+        <a th:href="@{/}" class="knop">Naar de startpagina</a>
+    </div>
+</main>
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

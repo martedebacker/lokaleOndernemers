@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Winkelmand')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container">
+    <h1 class="mt">Winkelmand</h1>
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+    <div class="kaart leeg" th:if="${#lists.isEmpty(groepen)}">
+        <div class="groot">🧺</div>
+        <p>Je winkelmand is leeg.</p>
+        <a th:href="@{/producten}" class="knop">Ontdek producten</a>
+    </div>
+
+    <div class="twee-kolommen" th:unless="${#lists.isEmpty(groepen)}">
+        <div>
+            <div class="kaart mb" th:each="g : ${groepen}" th:style="'--thema:' + ${g.onderneming.themaKleur}">
+                <div class="kaart-inhoud rij-tussen" style="border-bottom:1px solid var(--lijn)">
+                    <div>
+                        <a th:href="@{/winkel/{slug}(slug=${g.onderneming.slug})}"><strong th:text="${g.onderneming.naam}"></strong></a>
+                        <div class="zacht klein" th:text="'Ophalen in ' + ${g.onderneming.publiekAdres}"></div>
+                    </div>
+                    <span class="badge badge-tag">Aparte bestelling</span>
+                </div>
+                <div class="tabel-wrap">
+                    <table>
+                        <tr th:each="r : ${g.regels}">
+                            <td>
+                                <div class="rij">
+                                    <div class="mini-foto">
+                                        <th:block th:replace="~{fragments/layout :: foto(${r.product.afbeelding}, ${r.product.initiaal}, ${r.product.naam})}"></th:block>
+                                    </div>
+                                    <div>
+                                        <a th:href="@{/product/{id}(id=${r.product.id})}" th:text="${r.product.naam}"></a>
+                                        <div class="zacht klein">
+                                            <span th:text="${@fmt.euro(r.product.prijs)}"></span>
+                                            <span th:if="${r.product.eenheid}" th:text="${r.product.eenheid}"></span>
+                                        </div>
+                                        <div class="veldfout" th:if="${r.voorraadTeKort}"
+                                             th:text="'Nog maar ' + ${r.product.voorraad} + ' beschikbaar'"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <form th:action="@{/winkelmand/wijzigen}" method="post" class="rij" style="flex-wrap:nowrap">
+                                    <input type="hidden" name="productId" th:value="${r.product.id}">
+                                    <input type="number" name="aantal" class="aantal-invoer" min="0" max="99"
+                                           th:value="${r.aantal}" aria-label="Aantal">
+                                    <button type="submit" class="knop knop-tweede knop-klein">Wijzig</button>
+                                </form>
+                            </td>
+                            <td class="rechts"><strong th:text="${@fmt.euro(r.subtotaal)}"></strong></td>
+                            <td class="rechts">
+                                <form th:action="@{/winkelmand/verwijderen}" method="post" class="inline">
+                                    <input type="hidden" name="productId" th:value="${r.product.id}">
+                                    <button type="submit" class="knop knop-gevaar knop-klein" aria-label="Verwijderen">✕</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr class="totaalrij">
+                            <td colspan="2">Subtotaal bij <span th:text="${g.onderneming.naam}"></span></td>
+                            <td class="rechts" th:text="${@fmt.euro(g.totaal)}"></td>
+                            <td></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <aside class="kaart kaart-inhoud">
+            <h2>Overzicht</h2>
+            <div class="rij-tussen">
+                <span>Totaal</span>
+                <strong style="font-size:1.4rem" th:text="${@fmt.euro(totaal)}"></strong>
+            </div>
+            <p class="klein zacht mt">
+                🤝 Er wordt niet geleverd. Je haalt elke bestelling persoonlijk op bij de ondernemer en betaalt daar.
+            </p>
+            <a th:href="@{/afrekenen}" class="knop knop-blok">Bestelling plaatsen</a>
+            <a th:href="@{/producten}" class="knop knop-tweede knop-blok" style="margin-top:8px">Verder winkelen</a>
+        </aside>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Alle bestellingen')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: adminkop('bestellingen')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <h2 class="mt">Alle bestellingen</h2>
+    <p class="zacht klein">Overzicht ter opvolging. Bestellingen worden verwerkt door de ondernemers zelf.</p>
+
+    <div class="kaart leeg" th:if="${#lists.isEmpty(bestellingen)}"><p>Er zijn nog geen bestellingen geplaatst.</p></div>
+
+    <div class="kaart tabel-wrap" th:unless="${#lists.isEmpty(bestellingen)}">
+        <table>
+            <thead><tr><th>Nummer</th><th>Onderneming</th><th>Klant</th><th>Geplaatst</th><th>Ophalen</th><th>Totaal</th><th>Status</th></tr></thead>
+            <tbody>
+            <tr th:each="b : ${bestellingen}">
+                <td th:text="${b.nummer}"></td>
+                <td th:text="${b.onderneming.naam}"></td>
+                <td>
+                    <span th:text="${b.klant.volledigeNaam}"></span>
+                    <div class="zacht klein" th:text="${b.klant.email}"></div>
+                </td>
+                <td th:text="${@fmt.datumTijd(b.geplaatstOp)}"></td>
+                <td th:text="${@fmt.korteDatum(b.gewensteOphaaldatum)}"></td>
+                <td th:text="${@fmt.euro(b.totaal)}"></td>
+                <td><span th:replace="~{fragments/layout :: status(${b.status})}"></span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

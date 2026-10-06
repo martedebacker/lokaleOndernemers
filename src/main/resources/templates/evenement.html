@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${evenement.titel})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container" th:with="e=${evenement}">
+    <div class="breadcrumb">
+        <a th:href="@{/evenementen}">Evenementen</a> ›
+        <a th:href="@{/evenementen(regio=${e.regio.id})}" th:text="${e.regio.naam}"></a> ›
+        <span th:text="${e.titel}"></span>
+    </div>
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <div class="melding melding-info" th:if="${e.afgelopen}">Dit evenement is voorbij.</div>
+    <div class="melding melding-info" th:if="${!e.doorPlatform and !e.organisator.actief}">
+        <strong>Voorbeeldweergave.</strong> Dit evenement is nog niet zichtbaar voor klanten omdat de organiserende onderneming nog niet actief is.
+    </div>
+
+    <div class="evenement-banner" th:if="${e.afbeelding != null}">
+        <img th:src="@{/afbeelding/{id}(id=${e.afbeelding.id})}" th:alt="${e.titel}">
+    </div>
+
+    <div class="twee-kolommen">
+        <div>
+            <h1 th:text="${e.titel}">Evenement</h1>
+            <p class="pre" th:if="${e.beschrijving}" th:text="${e.beschrijving}"></p>
+
+            <section class="mt" th:unless="${#lists.isEmpty(e.betrokkenOndernemingen)}">
+                <h2 th:text="${e.doorPlatform} ? 'Deelnemende ondernemers' : 'Georganiseerd door'">Ondernemers</h2>
+                <div class="raster-breed">
+                    <th:block th:each="o : ${e.betrokkenOndernemingen}"><a th:replace="~{fragments/layout :: ondernemingkaart(${o})}"></a></th:block>
+                </div>
+            </section>
+        </div>
+
+        <aside class="kaart">
+            <div class="kaart-inhoud info-blok">
+                <h3>📅 Wanneer</h3>
+                <p class="klein" style="margin:0" th:text="${@fmt.periode(e.startMoment, e.eindMoment)}"></p>
+            </div>
+            <div class="kaart-inhoud info-blok">
+                <h3>📍 Waar</h3>
+                <p class="klein" style="margin:0">
+                    <span th:text="${e.locatie}"></span><br>
+                    <span th:text="${e.gemeente} + ' (' + ${e.regio.naam} + ')'"></span><br>
+                    <a target="_blank" rel="noopener"
+                       th:href="'https://www.google.com/maps/search/?api=1&query=' + ${#uris.escapeQueryParam(e.locatie + ', ' + e.gemeente)}">Bekijk op kaart ↗</a>
+                </p>
+            </div>
+            <div class="kaart-inhoud info-blok" th:if="${e.prijsInfo}">
+                <h3>🎟️ Prijs</h3>
+                <p class="klein" style="margin:0" th:text="${e.prijsInfo}"></p>
+            </div>
+            <div class="kaart-inhoud info-blok">
+                <h3>Organisatie</h3>
+                <p class="klein" style="margin:0" th:if="${e.doorPlatform}">Lokale Ondernemers</p>
+                <p class="klein" style="margin:0" th:unless="${e.doorPlatform}">
+                    <a th:href="@{/winkel/{slug}(slug=${e.organisator.slug})}" th:text="${e.organisator.naam}"></a>
+                </p>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

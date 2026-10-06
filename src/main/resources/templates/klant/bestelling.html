@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bestelling ' + ${bestelling.nummer})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+
+<main class="container" th:with="b=${bestelling}">
+    <div class="breadcrumb"><a th:href="@{/mijn/bestellingen}">Mijn bestellingen</a> › <span th:text="${b.nummer}"></span></div>
+    <div class="rij-tussen">
+        <h1 th:text="'Bestelling ' + ${b.nummer}">Bestelling</h1>
+        <span th:replace="~{fragments/layout :: status(${b.status})}"></span>
+    </div>
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <ul th:replace="~{fragments/bestelling :: tijdlijn(${b})}"></ul>
+
+    <div class="twee-kolommen mt">
+        <div>
+            <div th:replace="~{fragments/bestelling :: regels(${b})}"></div>
+            <div class="kaart kaart-inhoud mt" th:if="${b.opmerkingKlant}">
+                <strong>Jouw opmerking</strong>
+                <p class="pre" style="margin:4px 0 0" th:text="${b.opmerkingKlant}"></p>
+            </div>
+        </div>
+
+        <aside>
+            <div class="kaart kaart-inhoud afhaalkaart">
+                <h3>🤝 Ophalen</h3>
+                <p class="klein">
+                    <strong><a th:href="@{/winkel/{slug}(slug=${b.onderneming.slug})}" th:text="${b.onderneming.naam}"></a></strong><br>
+                    <span th:text="${b.onderneming.volledigAdres}"></span>
+                </p>
+                <p class="klein"><strong>Gewenste datum:</strong><br><span th:text="${@fmt.datum(b.gewensteOphaaldatum)}"></span></p>
+                <div class="melding melding-succes klein" th:if="${b.ophaalAfspraak}">
+                    <strong>Bericht van de ondernemer:</strong>
+                    <div class="pre" th:text="${b.ophaalAfspraak}"></div>
+                </div>
+                <p class="klein pre zacht" th:if="${b.onderneming.ophaalInfo}" th:text="${b.onderneming.ophaalInfo}"></p>
+                <p class="klein" style="margin:0">
+                    <span th:if="${b.onderneming.telefoon}">📞 <a th:href="'tel:' + ${b.onderneming.telefoon}" th:text="${b.onderneming.telefoon}"></a><br></span>
+                    <span th:if="${b.onderneming.email}">✉️ <a th:href="'mailto:' + ${b.onderneming.email}" th:text="${b.onderneming.email}"></a></span>
+                </p>
+            </div>
+            <p class="klein zacht mt" th:text="'Geplaatst op ' + ${@fmt.datumTijd(b.geplaatstOp)}"></p>
+            <form th:if="${b.status.name() == 'GEPLAATST'}" th:action="@{/mijn/bestellingen/{id}/annuleren(id=${b.id})}"
+                  method="post" onsubmit="return confirm('Wil je deze bestelling annuleren?')">
+                <button type="submit" class="knop knop-gevaar knop-blok">Bestelling annuleren</button>
+            </form>
+        </aside>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

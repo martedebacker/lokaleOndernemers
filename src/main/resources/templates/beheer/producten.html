@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Producten')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: beheerkop('producten')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <div class="rij-tussen mt mb">
+        <h2 style="margin:0">Mijn producten</h2>
+        <div class="rij">
+            <a th:href="@{/beheer/producten/importeren}" class="knop knop-tweede">⬆ Importeren uit Excel</a>
+            <a th:href="@{/beheer/producten/nieuw}" class="knop">+ Product toevoegen</a>
+        </div>
+    </div>
+
+    <div class="kaart leeg" th:if="${#lists.isEmpty(producten)}">
+        <div class="groot">🧺</div>
+        <p>Je hebt nog geen producten. Voeg je eerste product toe om het in je winkel te tonen.</p>
+    </div>
+
+    <div class="kaart tabel-wrap" th:unless="${#lists.isEmpty(producten)}" th:style="'--thema:' + ${onderneming.themaKleur}">
+        <table>
+            <thead>
+            <tr><th>Product</th><th>Categorie</th><th>Prijs</th><th>Voorraad</th><th>Zichtbaar</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="p : ${producten}">
+                <td>
+                    <div class="rij">
+                        <div class="mini-foto">
+                            <th:block th:replace="~{fragments/layout :: foto(${p.afbeelding}, ${p.initiaal}, ${p.naam})}"></th:block>
+                        </div>
+                        <a th:href="@{/beheer/producten/{id}(id=${p.id})}" th:text="${p.naam}"></a>
+                    </div>
+                </td>
+                <td th:text="${p.categorie ?: '—'}"></td>
+                <td><span th:text="${@fmt.euro(p.prijs)}"></span> <span class="eenheid" th:if="${p.eenheid}" th:text="${p.eenheid}"></span></td>
+                <td>
+                    <span th:text="${p.voorraad}"></span>
+                    <span class="badge badge-GEANNULEERD" th:unless="${p.opVoorraad}">Uitverkocht</span>
+                </td>
+                <td>
+                    <form th:action="@{/beheer/producten/{id}/zichtbaarheid(id=${p.id})}" method="post" class="inline">
+                        <button type="submit" class="knop knop-klein" th:classappend="${p.zichtbaar} ? '' : 'knop-tweede'"
+                                th:text="${p.zichtbaar} ? 'Zichtbaar' : 'Verborgen'"
+                                th:title="${p.zichtbaar} ? 'Klik om te verbergen' : 'Klik om te tonen'">Zichtbaar</button>
+                    </form>
+                </td>
+                <td class="rechts">
+                    <div class="rij" style="justify-content:flex-end">
+                        <a th:href="@{/beheer/producten/{id}(id=${p.id})}" class="knop knop-tweede knop-klein">Bewerken</a>
+                        <form th:action="@{/beheer/producten/{id}/verwijderen(id=${p.id})}" method="post" class="inline"
+                              onsubmit="return confirm('Dit product verwijderen?')">
+                            <button type="submit" class="knop knop-gevaar knop-klein">Verwijderen</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

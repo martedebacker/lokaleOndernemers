@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Feedback')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: beheerkop('feedback')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+    <div class="twee-kolommen mt">
+        <div>
+            <h2>Jouw feedback</h2>
+            <p class="zacht" th:if="${@platform.inTestfase}" th:text="'We zitten in een testfase tot ' + ${@platform.testfaseEindeTekst} + '. Loopt iets niet zoals je wil, mis je iets of heb je een idee? Laat het ons weten: zo bouwen we het platform samen met jou.'"></p>
+            <p class="zacht" th:unless="${@platform.inTestfase}">Loopt iets niet zoals je wil, mis je iets of heb je een idee? Laat het ons weten.</p>
+
+            <form th:action="@{/beheer/feedback}" th:object="${form}" method="post" class="formulier kaart kaart-inhoud">
+                <div th:replace="~{fragments/velden :: globalefouten}"></div>
+                <div class="formulier-raster">
+                    <div class="veld" th:classappend="${#fields.hasErrors('soort')} ? 'fout'">
+                        <label for="soort">Waarover gaat het?</label>
+                        <select th:field="*{soort}">
+                            <option th:each="s : ${soorten}" th:value="${s.name()}" th:text="${s.label}"></option>
+                        </select>
+                    </div>
+                    <div class="veld" th:classappend="${#fields.hasErrors('onderwerp')} ? 'fout'">
+                        <label for="onderwerp">Onderwerp</label>
+                        <input type="text" th:field="*{onderwerp}" required maxlength="150" placeholder="Bv. Producten sorteren op prijs">
+                        <span class="veldfout" th:errors="*{onderwerp}"></span>
+                    </div>
+                </div>
+                <div class="veld" th:classappend="${#fields.hasErrors('bericht')} ? 'fout'">
+                    <label for="bericht">Je bericht</label>
+                    <textarea th:field="*{bericht}" rows="6" required maxlength="4000"
+                              placeholder="Beschrijf zo concreet mogelijk wat je wil delen. Bij een probleem: wat deed je en wat ging er mis?"></textarea>
+                    <span class="veldfout" th:errors="*{bericht}"></span>
+                </div>
+                <div class="veld">
+                    <span class="klein" style="font-weight:600">Hoe tevreden ben je over het platform? <span class="zacht">(optioneel)</span></span>
+                    <div class="sterren">
+                        <label th:each="n : ${#numbers.sequence(1, 5)}">
+                            <input type="radio" th:field="*{tevredenheid}" th:value="${n}">
+                            <span th:text="${#strings.repeat('★', n)}">★</span>
+                        </label>
+                    </div>
+                </div>
+                <div><button type="submit" class="knop">Feedback versturen</button></div>
+            </form>
+        </div>
+
+        <aside class="kaart">
+            <div class="kaart-inhoud" style="border-bottom:1px solid var(--lijn)">
+                <h3 style="margin:0">Eerder verstuurd</h3>
+            </div>
+            <div class="kaart-inhoud zacht klein" th:if="${#lists.isEmpty(feedbackLijst)}">Je hebt nog geen feedback gegeven.</div>
+            <div class="kaart-inhoud feedback-item" th:each="f : ${feedbackLijst}">
+                <div class="rij-tussen">
+                    <strong th:text="${f.onderwerp}"></strong>
+                    <span class="badge" th:classappend="${f.status.name() == 'AFGEHANDELD'} ? 'badge-ACTIEF' : (${f.status.name() == 'NIEUW'} ? 'badge-GEPLAATST' : 'badge-BEVESTIGD')" th:text="${f.status.label}"></span>
+                </div>
+                <div class="zacht klein" th:text="${f.soort.label} + ' · ' + ${@fmt.datumTijd(f.aangemaaktOp)}"></div>
+                <p class="klein pre" style="margin:6px 0 0" th:text="${f.bericht}"></p>
+                <div class="antwoord" th:if="${f.antwoord}">
+                    <strong>Antwoord van Lokale Ondernemers</strong>
+                    <div class="pre" th:text="${f.antwoord}"></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Evenementen beheren')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: adminkop('evenementen')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <div class="rij-tussen mt mb">
+        <div>
+            <h2 style="margin:0">Evenementen</h2>
+            <p class="zacht klein" style="margin:0">Evenementen van het platform en van ondernemingen. Je kan ze allemaal aanpassen of verwijderen.</p>
+        </div>
+        <a th:href="@{/admin/evenementen/nieuw}" class="knop">+ Evenement van het platform</a>
+    </div>
+
+    <div class="kaart leeg" th:if="${#lists.isEmpty(evenementen)}">
+        <div class="groot">📅</div>
+        <p>Er zijn nog geen evenementen.</p>
+    </div>
+
+    <div class="kaart tabel-wrap" th:unless="${#lists.isEmpty(evenementen)}">
+        <table>
+            <thead><tr><th>Evenement</th><th>Wanneer</th><th>Regio</th><th>Organisatie</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="e : ${evenementen}">
+                <td>
+                    <a th:href="@{/evenementen/{id}(id=${e.id})}" th:text="${e.titel}" target="_blank"></a>
+                    <div class="zacht klein" th:text="${e.locatie} + ', ' + ${e.gemeente}"></div>
+                </td>
+                <td>
+                    <span class="klein" th:text="${@fmt.periode(e.startMoment, e.eindMoment)}"></span>
+                    <span class="badge badge-tag" th:if="${e.afgelopen}">Afgelopen</span>
+                </td>
+                <td th:text="${e.regio.naam}"></td>
+                <td>
+                    <span th:if="${e.doorPlatform}" class="badge badge-ACTIEF">Lokale Ondernemers</span>
+                    <span th:unless="${e.doorPlatform}" th:text="${e.organisator.naam}"></span>
+                    <div class="zacht klein" th:unless="${#sets.isEmpty(e.ondernemingen)}"
+                         th:text="'+ ' + ${#sets.size(e.ondernemingen)} + ' deelnemer(s)'"></div>
+                </td>
+                <td class="rechts">
+                    <div class="rij" style="justify-content:flex-end">
+                        <a th:href="@{/admin/evenementen/{id}(id=${e.id})}" class="knop knop-tweede knop-klein">Bewerken</a>
+                        <form th:action="@{/admin/evenementen/{id}/verwijderen(id=${e.id})}" method="post" class="inline"
+                              onsubmit="return confirm('Dit evenement verwijderen?')">
+                            <button type="submit" class="knop knop-gevaar knop-klein">Verwijderen</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

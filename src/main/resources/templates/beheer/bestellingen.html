@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Bestellingen')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: beheerkop('bestellingen')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <div class="rij-tussen mt mb">
+        <h2 style="margin:0" th:text="${alle} ? 'Alle bestellingen' : 'Openstaande bestellingen'">Bestellingen</h2>
+        <div class="rij">
+            <a th:href="@{/beheer/bestellingen}" class="knop knop-klein" th:classappend="${alle} ? 'knop-tweede'">Openstaand</a>
+            <a th:href="@{/beheer/bestellingen(alle=true)}" class="knop knop-klein" th:classappend="${!alle} ? 'knop-tweede'">Alle</a>
+        </div>
+    </div>
+
+    <div class="kaart leeg" th:if="${#lists.isEmpty(bestellingen)}">
+        <div class="groot">📭</div>
+        <p>Geen bestellingen gevonden.</p>
+    </div>
+
+    <div th:fragment="tabel(lijst)" class="kaart tabel-wrap" th:unless="${#lists.isEmpty(lijst != null ? lijst : bestellingen)}">
+        <table>
+            <thead>
+            <tr><th>Nummer</th><th>Klant</th><th>Geplaatst</th><th>Gewenst ophalen</th><th>Totaal</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${lijst != null ? lijst : bestellingen}">
+                <td th:text="${b.nummer}"></td>
+                <td>
+                    <span th:text="${b.klant.volledigeNaam}"></span>
+                    <div class="zacht klein" th:text="${b.aantalStuks} + ' stuks'"></div>
+                </td>
+                <td th:text="${@fmt.datumTijd(b.geplaatstOp)}"></td>
+                <td th:text="${@fmt.korteDatum(b.gewensteOphaaldatum)}"></td>
+                <td th:text="${@fmt.euro(b.totaal)}"></td>
+                <td><span th:replace="~{fragments/layout :: status(${b.status})}"></span></td>
+                <td class="rechts"><a th:href="@{/beheer/bestellingen/{id}(id=${b.id})}" class="knop knop-tweede knop-klein">Openen</a></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

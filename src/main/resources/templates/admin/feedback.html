@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Feedback van ondernemers')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: adminkop('feedback')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <div class="rij-tussen mt mb">
+        <h2 style="margin:0" th:text="${alle} ? 'Alle feedback' : 'Openstaande feedback'">Feedback</h2>
+        <div class="rij">
+            <a th:href="@{/admin/feedback}" class="knop knop-klein" th:classappend="${alle} ? 'knop-tweede'">Openstaand</a>
+            <a th:href="@{/admin/feedback(alle=true)}" class="knop knop-klein" th:classappend="${!alle} ? 'knop-tweede'">Alle</a>
+        </div>
+    </div>
+
+    <div class="kaart leeg" th:if="${#lists.isEmpty(feedbackLijst)}">
+        <div class="groot">💬</div>
+        <p>Geen feedback om te behandelen.</p>
+    </div>
+
+    <div class="kaart kaart-inhoud mb" th:each="f : ${feedbackLijst}">
+        <div class="rij-tussen">
+            <div>
+                <strong th:text="${f.onderwerp}"></strong>
+                <div class="zacht klein">
+                    <span th:text="${f.soort.label}"></span> ·
+                    <a th:href="@{/winkel/{slug}(slug=${f.onderneming.slug})}" target="_blank" th:text="${f.onderneming.naam}"></a> ·
+                    <span th:text="${f.afzender.volledigeNaam}"></span>
+                    (<a th:href="'mailto:' + ${f.afzender.email}" th:text="${f.afzender.email}"></a>) ·
+                    <span th:text="${@fmt.datumTijd(f.aangemaaktOp)}"></span>
+                </div>
+            </div>
+            <div class="rij">
+                <span th:if="${f.tevredenheid}" class="klein" th:text="${#strings.repeat('★', f.tevredenheid)}" th:title="'Tevredenheid ' + ${f.tevredenheid} + '/5'"></span>
+                <span class="badge" th:classappend="${f.status.name() == 'AFGEHANDELD'} ? 'badge-ACTIEF' : (${f.status.name() == 'NIEUW'} ? 'badge-GEPLAATST' : 'badge-BEVESTIGD')" th:text="${f.status.label}"></span>
+            </div>
+        </div>
+        <p class="pre" style="margin-top:12px" th:text="${f.bericht}"></p>
+        <form th:action="@{/admin/feedback/{id}(id=${f.id})}" method="post" class="formulier">
+            <div class="veld">
+                <label th:for="'antwoord-' + ${f.id}" class="klein">Antwoord aan de ondernemer <span class="zacht">(zichtbaar op hun feedbackpagina)</span></label>
+                <textarea th:id="'antwoord-' + ${f.id}" name="antwoord" rows="3" maxlength="4000" th:text="${f.antwoord}"></textarea>
+            </div>
+            <div class="rij">
+                <select name="status" aria-label="Status" style="width:auto">
+                    <option th:each="s : ${feedbackStatussen}" th:value="${s.name()}" th:text="${s.label}" th:selected="${s == f.status}"></option>
+                </select>
+                <button type="submit" class="knop knop-klein">Opslaan</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

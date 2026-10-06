@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Producten importeren')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: beheerkop('producten')}"></div>
+
+<main class="container">
+    <div class="breadcrumb"><a th:href="@{/beheer/producten}">Producten</a> › Importeren uit Excel</div>
+    <h2>Producten importeren uit Excel</h2>
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+    <!-- Stap 1: bestand kiezen -->
+    <div class="twee-kolommen" th:if="${imp == null}">
+        <div class="kaart kaart-inhoud">
+            <form th:action="@{/beheer/producten/importeren}" method="post" enctype="multipart/form-data" class="formulier">
+                <div class="veld">
+                    <label for="bestand">Excelbestand</label>
+                    <input type="file" id="bestand" name="bestand" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" required>
+                    <span class="hulp" th:text="'.xlsx of .xls, maximaal 5 MB en ' + ${maxRijen} + ' producten. Enkel het eerste werkblad wordt gelezen.'"></span>
+                </div>
+                <div class="rij">
+                    <button type="submit" class="knop">Bestand inlezen</button>
+                    <a th:href="@{/beheer/producten}" class="knop knop-tweede">Annuleren</a>
+                </div>
+            </form>
+        </div>
+        <aside class="kaart kaart-inhoud">
+            <h3>Hoe werkt het?</h3>
+            <ol class="klein" style="padding-left:18px">
+                <li>Zet je producten in Excel, één product per rij, met een <strong>kopregel</strong> bovenaan.</li>
+                <li>De kolommen worden herkend aan hun kop: <em>Naam</em>, <em>Prijs</em>, <em>Beschrijving</em>, <em>Eenheid</em>,
+                    <em>Categorie</em>, <em>Voorraad</em> en <em>Zichtbaar</em> (ja/nee). Ook varianten zoals "Product", "Prijs (€)" of "Stock" werken.</li>
+                <li>Je controleert de koppeling en ziet een voorbeeld vóór er iets opgeslagen wordt.</li>
+                <li>Een product met dezelfde naam als een bestaand product wordt <strong>bijgewerkt</strong>, niet dubbel aangemaakt.</li>
+            </ol>
+            <p class="klein zacht">Naam en prijs zijn verplicht. Foto's voeg je achteraf per product toe.</p>
+            <a th:href="@{/beheer/producten/importeren/sjabloon}" class="knop knop-tweede knop-klein">⬇ Download voorbeeldbestand</a>
+        </aside>
+    </div>
+
+    <!-- Stap 2: koppeling controleren en voorbeeld bekijken -->
+    <th:block th:if="${imp != null}">
+        <div class="kaart kaart-inhoud mb">
+            <div class="rij-tussen">
+                <div>
+                    <h3 style="margin:0">Kolommen koppelen</h3>
+                    <p class="zacht klein" style="margin:0" th:text="${imp.tabel.bestandsnaam} + ' · ' + ${#lists.size(imp.tabel.rijen)} + ' rijen'"></p>
+                </div>
+                <form th:action="@{/beheer/producten/importeren/annuleren}" method="post" class="inline">
+                    <button type="submit" class="knop knop-tweede knop-klein">Ander bestand kiezen</button>
+                </form>
+            </div>
+            <p class="klein zacht mt">We herkenden de kolommen aan je kopregel. Klopt iets niet? Pas het hier aan.</p>
+            <form th:action="@{/beheer/producten/importeren/koppeling}" method="post">
+                <div class="tabel-wrap">
+                    <table class="importtabel">
+                        <thead><tr><th>Kolom in je bestand</th><th>Voorbeeld</th><th>Importeren als</th></tr></thead>
+                        <tbody>
+                        <tr th:each="kolom, it : ${imp.tabel.kolommen}">
+                            <td><strong th:text="${kolom != '' ? kolom : '(kolom zonder kop)'}"></strong></td>
+                            <td class="zacht" th:text="${it.index < #lists.size(imp.tabel.rijen[0].waarden)} ? ${#strings.abbreviate(imp.tabel.rijen[0].waarden[it.index], 50)} : ''"></td>
+                            <td>
+                                <select th:name="'kolom' + ${it.index}" th:attr="aria-label='Veld voor ' + ${kolom}">
+                                    <option value="">— niet importeren —</option>
+                                    <option th:each="v : ${velden}" th:value="${v.name()}"
+                                            th:text="${v.label} + (${v.verplicht} ? ' *' : '')"
+                                            th:selected="${imp.koppeling.get(it.index) == v}"></option>
+                                </select>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="rij mt"><button type="submit" class="knop knop-tweede knop-klein">Koppeling toepassen</button>
+                    <span class="hulp">* verplicht</span></div>
+            </form>
+        </div>
+
+        <div class="melding melding-fout" th:each="f : ${voorbeeld.algemeneFouten}" th:text="${f}"></div>
+        <div class="melding melding-info" th:each="o : ${voorbeeld.opmerkingen}" th:text="${o}"></div>
+
+        <div class="statistieken mb">
+            <div class="kaart statistiek"><div class="getal" th:text="${voorbeeld.aantalNieuw}">0</div><div class="label">Nieuwe producten</div></div>
+            <div class="kaart statistiek"><div class="getal" th:text="${voorbeeld.aantalBijwerken}">0</div><div class="label">Bestaande bijwerken</div></div>
+            <div class="kaart statistiek" th:classappend="${voorbeeld.aantalFout > 0} ? 'opvallend'">
+                <div class="getal" th:text="${voorbeeld.aantalFout}">0</div><div class="label">Rijen met fouten (worden overgeslagen)</div></div>
+        </div>
+
+        <div class="kaart tabel-wrap mb" th:if="${#lists.isEmpty(voorbeeld.algemeneFouten)}">
+            <table class="importtabel">
+                <thead><tr><th>Rij</th><th>Actie</th><th>Naam</th><th>Prijs</th><th>Eenheid</th><th>Categorie</th><th>Voorraad</th><th>Zichtbaar</th><th>Opmerking</th></tr></thead>
+                <tbody>
+                <tr th:each="r : ${voorbeeld.rijen}" th:classappend="${!r.geldig} ? 'ongeldig'">
+                    <td th:text="${r.rijNummer}"></td>
+                    <td>
+                        <span th:if="${!r.geldig}" class="badge badge-GEANNULEERD">Fout</span>
+                        <span th:if="${r.geldig and r.bijwerken}" class="badge badge-BEVESTIGD">Bijwerken</span>
+                        <span th:if="${r.geldig and !r.bijwerken}" class="badge badge-ACTIEF">Nieuw</span>
+                    </td>
+                    <td th:text="${r.naam}"></td>
+                    <td th:text="${r.prijs != null} ? ${@fmt.euro(r.prijs)} : ''"></td>
+                    <td th:text="${r.eenheid}"></td>
+                    <td th:text="${r.categorie}"></td>
+                    <td th:text="${r.voorraad != null} ? ${r.voorraad} : '—'"></td>
+                    <td th:text="${r.zichtbaar == null} ? '—' : (${r.zichtbaar} ? 'ja' : 'nee')"></td>
+                    <td class="veldfout" th:text="${#strings.listJoin(r.fouten, '; ')}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="rij">
+            <form th:action="@{/beheer/producten/importeren/bevestigen}" method="post" class="inline">
+                <button type="submit" class="knop" th:disabled="${!voorbeeld.importeerbaar}"
+                        th:text="'Importeer ' + ${voorbeeld.aantalNieuw + voorbeeld.aantalBijwerken} + ' producten'">Importeren</button>
+            </form>
+            <form th:action="@{/beheer/producten/importeren/annuleren}" method="post" class="inline">
+                <button type="submit" class="knop knop-tweede">Annuleren</button>
+            </form>
+        </div>
+    </th:block>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

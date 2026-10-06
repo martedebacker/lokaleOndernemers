@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${inhoud.onderwerp}">Bestelling</title>
+</head>
+<!-- E-mailclients ondersteunen weinig CSS: daarom tabellen en inline stijlen. -->
+<body style="margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;color:#2b2a27;"
+      th:style="'margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;color:#2b2a27;background:' + ${o.achtergrondKleur}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" th:style="'background:' + ${o.achtergrondKleur}">
+    <tr>
+        <td align="center" style="padding:24px 12px;">
+            <table role="presentation" width="600" cellpadding="0" cellspacing="0"
+                   style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e6e0d6;">
+
+                <!-- Kop in de hoofdkleur van de ondernemer, met logo of naam -->
+                <tr>
+                    <td align="center" th:style="'background:' + ${o.themaKleur} + ';padding:28px 24px;'">
+                        <img th:if="${logoSrc != null}" th:src="${logoSrc}" th:alt="${o.naam}" width="72" height="72"
+                             style="display:block;width:72px;height:72px;border-radius:50%;border:3px solid #ffffff;object-fit:cover;margin:0 auto 10px;">
+                        <div style="font-family:Georgia,'Times New Roman',serif;font-size:24px;font-weight:bold;color:#ffffff;" th:text="${o.naam}">Onderneming</div>
+                        <div th:if="${o.slogan != null}" style="font-size:14px;color:#ffffff;opacity:.9;margin-top:4px;" th:text="${o.slogan}"></div>
+                    </td>
+                </tr>
+
+                <!-- Boodschap -->
+                <tr>
+                    <td style="padding:28px 28px 8px;">
+                        <h1 th:style="'margin:0 0 12px;font-family:Georgia,serif;font-size:22px;color:' + ${o.accentKleur}" th:text="${inhoud.titel}">Titel</h1>
+                        <p th:unless="${voorOndernemer}" style="margin:0 0 8px;font-size:15px;line-height:1.55;" th:text="'Dag ' + ${b.klant.voornaam} + ','">Dag Kim,</p>
+                        <p style="margin:0 0 16px;font-size:15px;line-height:1.55;" th:text="${inhoud.intro}">Tekst</p>
+                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 8px;">
+                            <tr>
+                                <td style="font-size:13px;color:#6b675f;padding-right:16px;">Bestelling</td>
+                                <td style="font-size:13px;font-weight:bold;" th:text="${b.nummer}">LO-00001</td>
+                            </tr>
+                            <tr>
+                                <td style="font-size:13px;color:#6b675f;padding-right:16px;">Status</td>
+                                <td style="font-size:13px;font-weight:bold;" th:style="'font-size:13px;font-weight:bold;color:' + ${o.themaKleur}" th:text="${b.status.label}">Nieuw</td>
+                            </tr>
+                            <tr>
+                                <td style="font-size:13px;color:#6b675f;padding-right:16px;">Gewenste ophaaldatum</td>
+                                <td style="font-size:13px;" th:text="${fmt.datum(b.gewensteOphaaldatum)}">datum</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Bericht van de ondernemer -->
+                <tr th:if="${b.ophaalAfspraak != null and b.status.name() != 'GEANNULEERD'}">
+                    <td style="padding:8px 28px;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                               th:style="'background:#f7f7f5;border-left:4px solid ' + ${o.accentKleur} + ';border-radius:6px;'">
+                            <tr><td style="padding:12px 16px;font-size:14px;line-height:1.5;">
+                                <strong th:text="${voorOndernemer} ? 'Jouw bericht aan de klant' : 'Bericht van ' + ${o.naam}">Bericht</strong><br>
+                                <span th:text="${b.ophaalAfspraak}" style="white-space:pre-line;">Afspraak</span>
+                            </td></tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Producten -->
+                <tr>
+                    <td style="padding:16px 28px;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:14px;">
+                            <tr th:each="r : ${b.regels}">
+                                <td style="padding:8px 0;border-bottom:1px solid #eeeae3;" th:text="${r.aantal} + ' × ' + ${r.productNaam}">1 × product</td>
+                                <td style="padding:8px 0;border-bottom:1px solid #eeeae3;color:#6b675f;font-size:12px;" th:text="${r.eenheid}"></td>
+                                <td align="right" style="padding:8px 0;border-bottom:1px solid #eeeae3;" th:text="${fmt.euro(r.subtotaal)}">€ 0</td>
+                            </tr>
+                            <tr>
+                                <td colspan="2" style="padding:10px 0;font-weight:bold;">Totaal, te betalen bij afhaling</td>
+                                <td align="right" th:style="'padding:10px 0;font-weight:bold;font-size:16px;color:' + ${o.themaKleur}" th:text="${fmt.euro(b.totaal)}">€ 0</td>
+                            </tr>
+                        </table>
+                        <p th:if="${b.opmerkingKlant != null}" style="margin:8px 0 0;font-size:13px;color:#6b675f;">
+                            <strong th:text="${voorOndernemer} ? 'Opmerking van de klant:' : 'Jouw opmerking:'">Opmerking:</strong>
+                            <span th:text="${b.opmerkingKlant}"></span>
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Ophalen (voor de klant) of klantgegevens (voor de ondernemer) -->
+                <tr>
+                    <td style="padding:8px 28px 16px;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+                               th:style="'background:' + ${o.achtergrondKleur} + ';border-radius:8px;'">
+                            <tr><td style="padding:14px 16px;font-size:14px;line-height:1.55;" th:unless="${voorOndernemer}">
+                                <strong th:style="'color:' + ${o.accentKleur}">🤝 Persoonlijk ophalen</strong><br>
+                                <span th:text="${o.naam}"></span><br>
+                                <span th:text="${o.volledigAdres}"></span><br>
+                                <span th:if="${o.ophaalInfo != null}" style="white-space:pre-line;color:#6b675f;font-size:13px;" th:text="${o.ophaalInfo}"></span>
+                            </td>
+                            <td style="padding:14px 16px;font-size:14px;line-height:1.55;" th:if="${voorOndernemer}">
+                                <strong th:style="'color:' + ${o.accentKleur}">Klant</strong><br>
+                                <span th:text="${b.klant.volledigeNaam}"></span><br>
+                                <a th:href="'mailto:' + ${b.klant.email}" th:text="${b.klant.email}" th:style="'color:' + ${o.themaKleur}"></a>
+                                <span th:if="${b.klant.telefoon != null}"><br><span th:text="${b.klant.telefoon}"></span></span>
+                            </td></tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Knop -->
+                <tr>
+                    <td align="center" style="padding:8px 28px 28px;">
+                        <a th:href="${inhoud.knopUrl}" th:text="${inhoud.knopTekst}"
+                           th:style="'display:inline-block;background:' + ${o.themaKleur} + ';color:#ffffff;text-decoration:none;font-weight:bold;font-size:15px;padding:12px 26px;border-radius:999px;'">Bekijk</a>
+                    </td>
+                </tr>
+
+                <!-- Voet met contactgegevens -->
+                <tr>
+                    <td style="padding:18px 28px;border-top:1px solid #eeeae3;font-size:12px;color:#6b675f;line-height:1.6;" align="center">
+                        <th:block th:unless="${voorOndernemer}">
+                            Vragen? Antwoord gewoon op deze e-mail of neem contact op met <span th:text="${o.naam}"></span>
+                            <span th:if="${o.telefoon != null}" th:text="' · ' + ${o.telefoon}"></span><br>
+                        </th:block>
+                        Verstuurd via <a th:href="${basisUrl}" style="color:#6b675f;">Lokale Ondernemers</a> — koop lokaal, haal persoonlijk op.
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

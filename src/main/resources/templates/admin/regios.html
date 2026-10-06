@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Regio’s beheren')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: adminkop('regios')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+
+    <div class="twee-kolommen mt">
+        <div class="kaart tabel-wrap">
+            <table>
+                <thead><tr><th>Regio</th><th>Gekoppeld</th><th>Verwijderen</th></tr></thead>
+                <tbody>
+                <tr th:each="r : ${regios}">
+                    <td>
+                        <form th:action="@{/admin/regios/{id}(id=${r.regio.id})}" method="post" class="formulier" style="gap:6px">
+                            <input type="text" name="naam" th:value="${r.regio.naam}" required aria-label="Naam">
+                            <input type="text" name="beschrijving" th:value="${r.regio.beschrijving}" placeholder="Beschrijving" aria-label="Beschrijving">
+                            <div class="rij">
+                                <button type="submit" class="knop knop-tweede knop-klein">Opslaan</button>
+                                <a class="klein" th:href="@{/regio/{id}(id=${r.regio.id})}" target="_blank">Bekijk ↗</a>
+                            </div>
+                        </form>
+                    </td>
+                    <td class="klein">
+                        <div th:text="${r.actief} + ' actief'"></div>
+                        <div class="zacht" th:if="${r.nietActief > 0}" th:text="${r.nietActief} + ' niet actief'"></div>
+                        <div class="zacht" th:if="${r.evenementen > 0}" th:text="${r.evenementen} + ' evenement(en)'"></div>
+                    </td>
+                    <td>
+                        <span th:unless="${r.verwijderbaar}" class="zacht klein">Niet mogelijk: er zijn nog actieve ondernemingen.</span>
+                        <form th:if="${r.verwijderbaar}" th:action="@{/admin/regios/{id}/verwijderen(id=${r.regio.id})}" method="post"
+                              class="formulier" style="gap:6px" onsubmit="return confirm('Deze regio verwijderen?')">
+                            <th:block th:if="${r.verplaatsingNodig}">
+                                <label class="klein zacht" th:for="'naar-' + ${r.regio.id}">Verplaats niet-actieve ondernemingen en evenementen naar:</label>
+                                <select th:id="'naar-' + ${r.regio.id}" name="verplaatsNaar" required>
+                                    <option value="">Kies…</option>
+                                    <option th:each="a : ${regios}" th:unless="${a.regio.id == r.regio.id}"
+                                            th:value="${a.regio.id}" th:text="${a.regio.naam}"></option>
+                                </select>
+                            </th:block>
+                            <div><button type="submit" class="knop knop-gevaar knop-klein">Verwijderen</button></div>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <aside class="kaart kaart-inhoud">
+            <h3>Nieuwe regio</h3>
+            <form th:action="@{/admin/regios}" th:object="${form}" method="post" class="formulier">
+                <div th:replace="~{fragments/velden :: globalefouten}"></div>
+                <div class="veld" th:classappend="${#fields.hasErrors('naam')} ? 'fout'">
+                    <label for="naam">Naam</label>
+                    <input type="text" th:field="*{naam}" required>
+                    <span class="veldfout" th:errors="*{naam}"></span>
+                </div>
+                <div class="veld">
+                    <label for="beschrijving">Beschrijving</label>
+                    <textarea th:field="*{beschrijving}" rows="3"></textarea>
+                </div>
+                <button type="submit" class="knop">Toevoegen</button>
+            </form>
+        </aside>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="nl" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Evenementen')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: header}"></header>
+<div th:replace="~{fragments/layout :: beheerkop('evenementen')}"></div>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: meldingen}"></div>
+    <div class="rij-tussen mt mb">
+        <div>
+            <h2 style="margin:0">Mijn evenementen</h2>
+            <p class="zacht klein" style="margin:0">Evenementen die je organiseert of waaraan je deelneemt. Ze verschijnen op je winkelpagina, op de regiopagina en bij de evenementen.</p>
+        </div>
+        <a th:href="@{/beheer/evenementen/nieuw}" class="knop">+ Evenement toevoegen</a>
+    </div>
+
+    <div class="kaart leeg" th:if="${#lists.isEmpty(evenementen)}">
+        <div class="groot">📅</div>
+        <p>Je hebt nog geen evenementen. Organiseer een proeverij, workshop of opendeurdag om klanten te ontmoeten.</p>
+    </div>
+
+    <div class="kaart tabel-wrap" th:unless="${#lists.isEmpty(evenementen)}">
+        <table>
+            <thead><tr><th>Evenement</th><th>Wanneer</th><th>Rol</th><th></th></tr></thead>
+            <tbody>
+            <tr th:each="e : ${evenementen}" th:with="organisator=${e.organisator != null and e.organisator.id == onderneming.id}">
+                <td>
+                    <a th:href="@{/evenementen/{id}(id=${e.id})}" th:text="${e.titel}" target="_blank"></a>
+                    <div class="zacht klein" th:text="${e.locatie} + ', ' + ${e.gemeente}"></div>
+                </td>
+                <td>
+                    <span class="klein" th:text="${@fmt.periode(e.startMoment, e.eindMoment)}"></span>
+                    <span class="badge badge-tag" th:if="${e.afgelopen}">Afgelopen</span>
+                </td>
+                <td>
+                    <span class="badge badge-ACTIEF" th:if="${organisator}">Organisator</span>
+                    <span th:unless="${organisator}">
+                        <span class="badge badge-BEVESTIGD">Deelnemer</span>
+                        <div class="zacht klein" th:text="${e.doorPlatform} ? 'van Lokale Ondernemers' : 'van ' + ${e.organisator.naam}"></div>
+                    </span>
+                </td>
+                <td class="rechts">
+                    <div class="rij" style="justify-content:flex-end" th:if="${organisator}">
+                        <a th:href="@{/beheer/evenementen/{id}(id=${e.id})}" class="knop knop-tweede knop-klein">Bewerken</a>
+                        <form th:action="@{/beheer/evenementen/{id}/verwijderen(id=${e.id})}" method="post" class="inline"
+                              onsubmit="return confirm('Dit evenement verwijderen?')">
+                            <button type="submit" class="knop knop-gevaar knop-klein">Verwijderen</button>
+                        </form>
+                    </div>
+                    <form th:unless="${organisator}" th:action="@{/beheer/evenementen/{id}/uitstappen(id=${e.id})}" method="post" class="inline"
+                          onsubmit="return confirm('Je onderneming terugtrekken uit dit evenement?')">
+                        <button type="submit" class="knop knop-gevaar knop-klein">Niet meer deelnemen</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+<footer th:replace="~{fragments/layout :: footer}"></footer>
+</body>
+</html>
