@@ -37,3 +37,6 @@ data/
 
 ### Lokaal bewaarde e-mails (geen SMTP ingesteld) ###
 mail-voorbeelden/
+
+### Geheimen voor docker compose ###
+.env

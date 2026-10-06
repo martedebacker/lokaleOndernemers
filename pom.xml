@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.example</groupId>
-    <artifactId>Checklist</artifactId>
+    <artifactId>LokaleOndernemers</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>LokaleOndernemers</name>
     <description>LokaleOndernemers</description>
@@ -92,6 +92,11 @@
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.mariadb.jdbc</groupId>
+            <artifactId>mariadb-java-client</artifactId>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.mysql</groupId>

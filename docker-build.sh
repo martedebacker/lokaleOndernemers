@@ -1,0 +1,2 @@
+
+docker buildx build --platform "linux/arm64" --build-arg BUILD_VERSION="$(git describe --always --dirty)" -t "192.168.0.79:5000/lokaleondernemers:0.0.1-SNAPSHOT" -t "192.168.0.79:5000/lokaleondernemers:latest" --push .
